@@ -1,5 +1,9 @@
 # Project Instructions
 
+## Git
+
+- Use `git -C <path>` instead of `cd`-ing into directories when running git commands.
+
 ## Commits
 
 - Commit incrementally as you work. Group related changes into logical commits rather than waiting until the entire implementation is finished.
