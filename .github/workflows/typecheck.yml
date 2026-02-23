@@ -1,4 +1,4 @@
-name: Build
+name: Type Check
 
 on:
   push:
@@ -7,9 +7,9 @@ on:
     branches: [master]
 
 jobs:
-  build:
+  typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: npm run build
+      - run: npm run typecheck
