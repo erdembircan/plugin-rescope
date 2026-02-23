@@ -24,3 +24,4 @@ When asked to work on GitHub project tasks, always spawn the `planner` agent fir
 - When asked to work on PRs, list open PRs to get their numbers, then pass each directly to the `review` agent. Do not fetch PR details, diffs, or analyze anything yourself — the review agent handles all of that.
 - Do NOT instruct the review agent to only report findings. Let it do its job: apply requested changes and/or merge based on review comments.
 - Do NOT duplicate work that the review agent is already designed to do.
+- After all review agents have completed their work and at least one PR was merged, sync the local repo: run `git fetch` first, then `git pull` only if there are new changes.
