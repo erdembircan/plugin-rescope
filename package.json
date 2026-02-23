@@ -1,0 +1,43 @@
+{
+  "name": "plugin-rescope",
+  "version": "0.0.1",
+  "description": "Workarounds to rescope Claude Code plugins across projects",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "type": "module",
+  "bin": {
+    "plugin-rescope": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && npm run minify",
+    "minify": "terser build/index.js -o build/index.js --module --compress --mangle",
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run --passWithNoTests"
+  },
+  "author": "Erdem Bircan <erdem.erdembircan@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "build/",
+    "LICENSE"
+  ],
+  "keywords": [
+    "claude",
+    "plugin",
+    "rescope"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.3.0",
+    "eslint": "^10.0.1",
+    "prettier": "^3.8.1",
+    "terser": "^5.46.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0",
+    "vitest": "^4.0.18"
+  }
+}
