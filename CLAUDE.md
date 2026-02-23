@@ -18,3 +18,9 @@ If an issue or PR references a doc file (e.g., "use docs/use-case-flowchart.mmd"
 ## GitHub Project Tasks
 
 When asked to work on GitHub project tasks, always spawn the `planner` agent first to fetch and plan tasks, then use the `task` agent to execute approved tasks. Do not attempt to interact with GitHub Projects directly.
+
+## Pull Request Reviews
+
+- When asked to work on PRs, list open PRs to get their numbers, then pass each directly to the `review` agent. Do not fetch PR details, diffs, or analyze anything yourself — the review agent handles all of that.
+- Do NOT instruct the review agent to only report findings. Let it do its job: apply requested changes and/or merge based on review comments.
+- Do NOT duplicate work that the review agent is already designed to do.
