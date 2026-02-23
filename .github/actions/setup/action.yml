@@ -1,0 +1,25 @@
+name: Setup
+description: Install Node.js and npm dependencies with caching
+
+inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: "22"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - uses: actions/cache@v4
+      id: npm-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+    - if: steps.npm-cache.outputs.cache-hit != 'true'
+      run: npm ci
+      shell: bash
