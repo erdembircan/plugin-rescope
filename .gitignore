@@ -1,8 +1,8 @@
 .DS_Store
-.vscode/
-docs/
-.claude/
-worktrees/
 
-node_modules/
+.claude/
+.vscode/
 build/
+docs/
+node_modules/
+worktrees/
