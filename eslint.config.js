@@ -5,6 +5,6 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["build/", "node_modules/", "jest.config.ts"],
+    ignores: ["build/", "node_modules/", "vitest.config.ts"],
   },
 );
