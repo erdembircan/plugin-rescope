@@ -21,6 +21,7 @@ When asked to work on GitHub project tasks, always spawn the `planner` agent fir
 
 ## Pull Request Reviews
 
+- Never auto-review PRs after creating them. Always wait for the user to explicitly ask for a review — they need to check the PR first.
 - When asked to work on PRs, list open PRs to get their numbers, then pass each directly to the `review` agent. Do not fetch PR details, diffs, or analyze anything yourself — the review agent handles all of that.
 - Do NOT instruct the review agent to only report findings. Let it do its job: apply requested changes and/or merge based on review comments.
 - Do NOT duplicate work that the review agent is already designed to do.
