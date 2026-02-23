@@ -3,3 +3,6 @@
 docs/
 .claude/
 worktrees/
+
+node_modules/
+build/
