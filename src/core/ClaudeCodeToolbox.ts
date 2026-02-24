@@ -27,6 +27,8 @@ const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
 export class ClaudeCodeToolbox {
   /**
+   * Creates a new ClaudeCodeToolbox instance.
+   *
    * @param globalConfig - Config handle for the global plugin registry file.
    * @param localConfig - Config handle for the local project settings file.
    */
