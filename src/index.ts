@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-export { PluginRescope } from "./PluginRescope.js";
+export { PluginRescope } from "./core/PluginRescope.js";
