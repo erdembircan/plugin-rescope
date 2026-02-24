@@ -1,21 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { JsonConfig } from "#util/JsonConfig.js";
+import { ShellCommand } from "#util/ShellCommand.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
 import { ShellCommandError } from "#util/ShellCommandError.js";
 
-const mockExecute = vi.hoisted(() => vi.fn());
-
-vi.mock("#util/ShellCommand.js", () => ({
-  ShellCommand: { execute: mockExecute },
-}));
-
-function createMockConfig(): JsonConfig {
-  return {
-    read: vi.fn(),
-    update: vi.fn(),
-  } as unknown as JsonConfig;
-}
+vi.mock("#util/JsonConfig.js");
+vi.mock("#util/ShellCommand.js");
 
 describe("ClaudeCodeToolbox", () => {
   let mockGlobalConfig: JsonConfig;
@@ -23,13 +14,13 @@ describe("ClaudeCodeToolbox", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGlobalConfig = createMockConfig();
-    mockLocalConfig = createMockConfig();
+    mockGlobalConfig = new JsonConfig("fake-global-path");
+    mockLocalConfig = new JsonConfig("fake-local-path");
   });
 
   describe("validateInstallation", () => {
     it("returns the version string when claude is installed", () => {
-      mockExecute.mockReturnValue("1.0.27 (Claude Code)");
+      vi.mocked(ShellCommand.execute).mockReturnValue("1.0.27 (Claude Code)");
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
@@ -38,7 +29,7 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when claude is not installed", () => {
-      mockExecute.mockImplementation(() => {
+      vi.mocked(ShellCommand.execute).mockImplementation(() => {
         throw new ShellCommandError("command not found: claude");
       });
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
@@ -49,7 +40,7 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when version output does not match expected format", () => {
-      mockExecute.mockReturnValue("some unexpected output");
+      vi.mocked(ShellCommand.execute).mockReturnValue("some unexpected output");
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
@@ -58,7 +49,7 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when version is not at the start of the output", () => {
-      mockExecute.mockReturnValue("version: 1.0.27 (Claude Code)");
+      vi.mocked(ShellCommand.execute).mockReturnValue("version: 1.0.27 (Claude Code)");
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
@@ -67,7 +58,7 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when there is no space after the version number", () => {
-      mockExecute.mockReturnValue("1.0.27(Claude Code)");
+      vi.mocked(ShellCommand.execute).mockReturnValue("1.0.27(Claude Code)");
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();

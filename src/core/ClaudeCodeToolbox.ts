@@ -19,13 +19,10 @@ type GlobalPluginConfig = {
 const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
 export class ClaudeCodeToolbox {
-  private readonly globalConfig: JsonConfig;
-  private readonly localConfig: JsonConfig;
-
-  constructor(globalConfig: JsonConfig, localConfig: JsonConfig) {
-    this.globalConfig = globalConfig;
-    this.localConfig = localConfig;
-  }
+  constructor(
+    private readonly globalConfig: JsonConfig,
+    private readonly localConfig: JsonConfig,
+  ) {}
 
   /**
    * Checks whether the Claude CLI is installed by running `claude --version`.
