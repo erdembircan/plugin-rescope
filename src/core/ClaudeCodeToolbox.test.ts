@@ -49,7 +49,9 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when version is not at the start of the output", () => {
-      vi.mocked(ShellCommand.execute).mockReturnValue("version: 1.0.27 (Claude Code)");
+      vi.mocked(ShellCommand.execute).mockReturnValue(
+        "version: 1.0.27 (Claude Code)",
+      );
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
