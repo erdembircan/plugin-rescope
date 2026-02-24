@@ -3,7 +3,7 @@
  */
 export class ShellCommandError extends Error {
   /**
-   * Creates a new ShellCommandError instance.
+   * Class constructor.
    *
    * @param message - The error message from the failed command.
    */

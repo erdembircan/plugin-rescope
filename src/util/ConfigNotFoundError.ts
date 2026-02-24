@@ -3,7 +3,7 @@
  */
 export class ConfigNotFoundError extends Error {
   /**
-   * Creates a new ConfigNotFoundError instance.
+   * Class constructor.
    *
    * @param path - Absolute path to the missing config file.
    */

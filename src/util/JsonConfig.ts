@@ -8,7 +8,7 @@ export class JsonConfig {
   private readonly path: string;
 
   /**
-   * Creates a new JsonConfig instance.
+   * Class constructor.
    *
    * @param path - Absolute path to the JSON config file.
    */
