@@ -25,6 +25,11 @@ type LocalSettings = {
 
 const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
+/**
+ * Manages interactions with the Claude Code CLI and its configuration files.
+ * Provides methods to validate the CLI installation, read and write the global
+ * plugin registry, and manage local project plugin settings.
+ */
 export class ClaudeCodeToolbox {
   /**
    * Class constructor.
