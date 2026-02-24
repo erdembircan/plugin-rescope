@@ -17,7 +17,7 @@ type GlobalPluginConfig = {
 };
 
 type LocalSettings = {
-  enabledPlugins: Record<string, boolean>;
+  enabledPlugins?: Record<string, boolean>;
 };
 
 const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
