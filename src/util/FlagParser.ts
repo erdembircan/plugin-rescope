@@ -3,21 +3,21 @@ export class FlagParser<T extends string> {
 
   /**
    * Creates a FlagParser instance for the given flag names.
-   * Flag names must not include the `--` prefix.
+   * Flag names are normalized: any `--` prefix is stripped, whitespace is
+   * trimmed, and internal spaces are removed.
    *
-   * @param flags - Flag names without the `--` prefix (e.g. `["scope", "output"]`).
-   * @throws {Error} If any flag name starts with `--`.
+   * @param flags - Flag names (e.g. `["scope", "output"]`).
    */
   constructor(flags: T[]) {
-    for (const flag of flags) {
-      if (flag.startsWith("--")) {
-        throw new Error(
-          `Flag "${flag}" must not include the "--" prefix. Use "${flag.slice(2)}" instead.`,
-        );
-      }
-    }
+    this.flags = flags.map((flag) => {
+      let normalized = flag.trim().replaceAll(" ", "");
 
-    this.flags = flags;
+      if (normalized.startsWith("--")) {
+        normalized = normalized.slice(2);
+      }
+
+      return normalized as T;
+    });
   }
 
   /**
