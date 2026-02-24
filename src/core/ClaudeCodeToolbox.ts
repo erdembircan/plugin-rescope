@@ -14,16 +14,13 @@ type PluginBinding = {
 
 /** Shape of the global plugin configuration file (`~/.claude/plugins/installed_plugins.json`). */
 type GlobalPluginConfig = {
-  version: number;
-  plugins: Record<string, PluginBinding[]>;
+  plugins?: Record<string, PluginBinding[]>;
 };
 
 /** Shape of the local project settings file (`.claude/settings.local.json`). */
 type LocalSettings = {
   enabledPlugins?: Record<string, boolean>;
 };
-
-const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
 /**
  * Manages interactions with the Claude Code CLI and its configuration files.
@@ -50,6 +47,7 @@ export class ClaudeCodeToolbox {
    *          the CLI is not found or the output does not match the expected format.
    */
   validateInstallation(): false | string {
+    const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
     try {
       const output = ShellCommand.execute("claude --version");
       const match = output.match(VERSION_REGEX);
@@ -70,7 +68,7 @@ export class ClaudeCodeToolbox {
    */
   getGlobalPluginConfig(pluginName: string): PluginBinding[] {
     const config = this.readGlobalConfig();
-    return config.plugins[pluginName] ?? [];
+    return config.plugins?.[pluginName] ?? [];
   }
 
   /**
@@ -83,9 +81,11 @@ export class ClaudeCodeToolbox {
    */
   addGlobalPluginBinding(pluginName: string, binding: PluginBinding): void {
     const config = this.readGlobalConfig();
-    const existing = config.plugins[pluginName] ?? [];
+    const plugins = config.plugins ?? {};
+    const existing = plugins[pluginName] ?? [];
     existing.push(binding);
-    config.plugins[pluginName] = existing;
+    plugins[pluginName] = existing;
+    config.plugins = plugins;
     this.updateGlobalConfig(config);
   }
 

@@ -84,7 +84,6 @@ describe("ClaudeCodeToolbox", () => {
         },
       ];
       vi.mocked(mockGlobalConfig.read).mockReturnValue({
-        version: 2,
         plugins: {
           "testing-philosophy@erdembircan-plugins": bindings,
         },
@@ -100,12 +99,20 @@ describe("ClaudeCodeToolbox", () => {
 
     it("returns an empty array when the plugin is not found", () => {
       vi.mocked(mockGlobalConfig.read).mockReturnValue({
-        version: 2,
         plugins: {},
       });
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.getGlobalPluginConfig("nonexistent@owner");
+
+      expect(result).toEqual([]);
+    });
+
+    it("returns an empty array when the plugins field is absent", () => {
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({});
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      const result = toolbox.getGlobalPluginConfig("any-plugin@owner");
 
       expect(result).toEqual([]);
     });
@@ -145,7 +152,6 @@ describe("ClaudeCodeToolbox", () => {
         projectPath: "/Users/test/project-b",
       };
       vi.mocked(mockGlobalConfig.read).mockReturnValue({
-        version: 2,
         plugins: {
           "my-plugin@owner": [existingBinding],
         },
@@ -155,7 +161,6 @@ describe("ClaudeCodeToolbox", () => {
       toolbox.addGlobalPluginBinding("my-plugin@owner", newBinding);
 
       expect(mockGlobalConfig.update).toHaveBeenCalledWith({
-        version: 2,
         plugins: {
           "my-plugin@owner": [existingBinding, newBinding],
         },
@@ -173,7 +178,6 @@ describe("ClaudeCodeToolbox", () => {
         projectPath: "/Users/test/project",
       };
       vi.mocked(mockGlobalConfig.read).mockReturnValue({
-        version: 2,
         plugins: {},
       });
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
@@ -181,9 +185,30 @@ describe("ClaudeCodeToolbox", () => {
       toolbox.addGlobalPluginBinding("new-plugin@owner", newBinding);
 
       expect(mockGlobalConfig.update).toHaveBeenCalledWith({
-        version: 2,
         plugins: {
           "new-plugin@owner": [newBinding],
+        },
+      });
+    });
+
+    it("creates the plugins field when it is absent", () => {
+      const newBinding = {
+        scope: "local",
+        installPath: "/path/to/plugin",
+        version: "1.0.0",
+        installedAt: "2026-02-24T12:00:00.000Z",
+        lastUpdated: "2026-02-24T12:00:00.000Z",
+        gitCommitSha: "abc123",
+        projectPath: "/Users/test/project",
+      };
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({});
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.addGlobalPluginBinding("my-plugin@owner", newBinding);
+
+      expect(mockGlobalConfig.update).toHaveBeenCalledWith({
+        plugins: {
+          "my-plugin@owner": [newBinding],
         },
       });
     });
