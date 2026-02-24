@@ -1,10 +1,11 @@
-export class FlagParser<T extends string> {
-  constructor(private readonly flags: T[]) {}
-
-  parse(args: string[]): { flags: Record<T, string>; positional: string } {
+export class FlagParser {
+  static parse<T extends string>(
+    args: string[],
+    flags: T[],
+  ): { flags: Record<T, string>; positional: string } {
     const result = {} as Record<T, string>;
 
-    for (const flag of this.flags) {
+    for (const flag of flags) {
       result[flag] = "";
     }
 
@@ -13,10 +14,10 @@ export class FlagParser<T extends string> {
 
     while (i < args.length) {
       const arg = args[i];
-      const flagIndex = this.flags.indexOf(arg as T);
+      const flagIndex = flags.indexOf(arg as T);
 
       if (flagIndex !== -1) {
-        result[this.flags[flagIndex]] = args[i + 1] ?? "";
+        result[flags[flagIndex]] = args[i + 1] ?? "";
         i += 2;
       } else {
         positional = arg;
