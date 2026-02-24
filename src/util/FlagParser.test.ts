@@ -57,9 +57,24 @@ describe("FlagParser", () => {
     expect(result.positional).toBe("");
   });
 
-  it("throws when a flag name includes the -- prefix", () => {
-    expect(() => new FlagParser(["--scope"])).toThrow(
-      'Flag "--scope" must not include the "--" prefix. Use "scope" instead.',
-    );
+  it("auto-corrects flag names that include the -- prefix", () => {
+    const parser = new FlagParser(["--scope"]);
+    const result = parser.parse(["--scope", "local"]);
+
+    expect(result.flags["scope"]).toBe("local");
+  });
+
+  it("trims whitespace from flag names", () => {
+    const parser = new FlagParser(["  scope  "]);
+    const result = parser.parse(["--scope", "local"]);
+
+    expect(result.flags["scope"]).toBe("local");
+  });
+
+  it("removes internal spaces from flag names", () => {
+    const parser = new FlagParser(["my flag"]);
+    const result = parser.parse(["--myflag", "value"]);
+
+    expect(result.flags["myflag"]).toBe("value");
   });
 });
