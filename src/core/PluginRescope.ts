@@ -75,10 +75,10 @@ export class PluginRescope {
       console.log(
         `Plugin "${pluginName}" rescoped to project "${this.projectPath}".`,
       );
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "An unknown error occurred.";
-      console.log(message);
+    } catch {
+      console.log(
+        "Something went wrong while rescoping the plugin. Please try again.",
+      );
     }
   }
 }
