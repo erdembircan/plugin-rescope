@@ -3,73 +3,61 @@ import { FlagParser } from "#util/FlagParser.js";
 
 describe("FlagParser", () => {
   it("parses flags with their values", () => {
-    const parser = new FlagParser(
-      ["--scope", "local", "--output", "dist"],
-      ["--scope", "--output"],
-    );
+    const parser = new FlagParser(["--scope", "--output"]);
 
-    const result = parser.parse();
+    const result = parser.parse(["--scope", "local", "--output", "dist"]);
 
     expect(result.flags["--scope"]).toBe("local");
     expect(result.flags["--output"]).toBe("dist");
   });
 
   it("defaults missing flags to empty string", () => {
-    const parser = new FlagParser(
-      ["--scope", "local"],
-      ["--scope", "--output"],
-    );
+    const parser = new FlagParser(["--scope", "--output"]);
 
-    const result = parser.parse();
+    const result = parser.parse(["--scope", "local"]);
 
     expect(result.flags["--scope"]).toBe("local");
     expect(result.flags["--output"]).toBe("");
   });
 
   it("extracts the positional argument", () => {
-    const parser = new FlagParser(["my-plugin"], ["--scope"]);
+    const parser = new FlagParser(["--scope"]);
 
-    const result = parser.parse();
+    const result = parser.parse(["my-plugin"]);
 
     expect(result.positional).toBe("my-plugin");
   });
 
   it("defaults positional to empty string when not provided", () => {
-    const parser = new FlagParser(["--scope", "local"], ["--scope"]);
+    const parser = new FlagParser(["--scope"]);
 
-    const result = parser.parse();
+    const result = parser.parse(["--scope", "local"]);
 
     expect(result.positional).toBe("");
   });
 
   it("parses a mix of flags and positional argument", () => {
-    const parser = new FlagParser(
-      ["--scope", "local", "my-plugin"],
-      ["--scope"],
-    );
+    const parser = new FlagParser(["--scope"]);
 
-    const result = parser.parse();
+    const result = parser.parse(["--scope", "local", "my-plugin"]);
 
     expect(result.flags["--scope"]).toBe("local");
     expect(result.positional).toBe("my-plugin");
   });
 
   it("handles positional argument before flags", () => {
-    const parser = new FlagParser(
-      ["my-plugin", "--scope", "local"],
-      ["--scope"],
-    );
+    const parser = new FlagParser(["--scope"]);
 
-    const result = parser.parse();
+    const result = parser.parse(["my-plugin", "--scope", "local"]);
 
     expect(result.flags["--scope"]).toBe("local");
     expect(result.positional).toBe("my-plugin");
   });
 
   it("returns all empty values when args is empty", () => {
-    const parser = new FlagParser([], ["--scope", "--output"]);
+    const parser = new FlagParser(["--scope", "--output"]);
 
-    const result = parser.parse();
+    const result = parser.parse([]);
 
     expect(result.flags["--scope"]).toBe("");
     expect(result.flags["--output"]).toBe("");
