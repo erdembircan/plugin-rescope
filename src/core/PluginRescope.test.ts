@@ -1,25 +1,36 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginRescope } from "#core/PluginRescope.js";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
+import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
 
 vi.mock("#core/ClaudeCodeToolbox.js");
 vi.mock("#util/JsonConfig.js");
 
 describe("PluginRescope", () => {
-  let mockToolbox: ClaudeCodeToolbox;
+  let consoleSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
+    consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
   });
+
+  afterEach(() => {
+    consoleSpy.mockRestore();
+  });
+
+  /**
+   * Helper: returns the mock ClaudeCodeToolbox instance created during
+   * the most recent `rescope()` call.
+   */
+  function getToolboxInstance(): ClaudeCodeToolbox {
+    const instances = vi.mocked(ClaudeCodeToolbox).mock.instances;
+    return instances[instances.length - 1]!;
+  }
 
   describe("rescope", () => {
     it("registers the plugin in global and local config when found", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      const rescope = new PluginRescope("/Users/test/my-project");
-      mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
-      vi.mocked(mockToolbox.validateInstallation).mockReturnValue("1.0.27");
-      vi.mocked(mockToolbox.getGlobalPluginConfig).mockReturnValue([
+      vi.mocked(ClaudeCodeToolbox.prototype.validateInstallation).mockReturnValue("1.0.27");
+      vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig).mockReturnValue([
         {
           scope: "global",
           installPath: "/path/to/plugin",
@@ -31,8 +42,10 @@ describe("PluginRescope", () => {
         },
       ]);
 
+      const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
 
+      const mockToolbox = getToolboxInstance();
       expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
         "my-plugin@owner",
         expect.objectContaining({
@@ -46,15 +59,11 @@ describe("PluginRescope", () => {
       expect(mockToolbox.addLocalPlugin).toHaveBeenCalledWith(
         "my-plugin@owner",
       );
-      consoleSpy.mockRestore();
     });
 
     it("copies installPath, version, and gitCommitSha from the first existing binding", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      const rescope = new PluginRescope("/Users/test/new-project");
-      mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
-      vi.mocked(mockToolbox.validateInstallation).mockReturnValue("1.0.27");
-      vi.mocked(mockToolbox.getGlobalPluginConfig).mockReturnValue([
+      vi.mocked(ClaudeCodeToolbox.prototype.validateInstallation).mockReturnValue("1.0.27");
+      vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig).mockReturnValue([
         {
           scope: "local",
           installPath: "/specific/install/path",
@@ -75,8 +84,10 @@ describe("PluginRescope", () => {
         },
       ]);
 
+      const rescope = new PluginRescope("/Users/test/new-project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
 
+      const mockToolbox = getToolboxInstance();
       expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
         "my-plugin@owner",
         expect.objectContaining({
@@ -86,33 +97,42 @@ describe("PluginRescope", () => {
           installedAt: "2026-01-01T00:00:00.000Z",
         }),
       );
-      consoleSpy.mockRestore();
     });
 
     it("does not modify configs when plugin is absent from global config", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      const rescope = new PluginRescope("/Users/test/project");
-      mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
-      vi.mocked(mockToolbox.validateInstallation).mockReturnValue("1.0.27");
-      vi.mocked(mockToolbox.getGlobalPluginConfig).mockReturnValue([]);
+      vi.mocked(ClaudeCodeToolbox.prototype.validateInstallation).mockReturnValue("1.0.27");
+      vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig).mockReturnValue([]);
 
+      const rescope = new PluginRescope("/Users/test/project");
       rescope.rescope(["--scope", "local", "nonexistent@owner"]);
 
+      const mockToolbox = getToolboxInstance();
       expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
       expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
     });
 
     it("does not query global config when Claude is not installed", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      const rescope = new PluginRescope("/Users/test/project");
-      mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
-      vi.mocked(mockToolbox.validateInstallation).mockReturnValue(false);
+      vi.mocked(ClaudeCodeToolbox.prototype.validateInstallation).mockReturnValue(false);
 
+      const rescope = new PluginRescope("/Users/test/project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
 
+      const mockToolbox = getToolboxInstance();
       expect(mockToolbox.getGlobalPluginConfig).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
+    });
+
+    it("catches errors thrown by utility classes and logs them", () => {
+      vi.mocked(ClaudeCodeToolbox.prototype.validateInstallation).mockReturnValue("1.0.27");
+      vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig).mockImplementation(() => {
+        throw new ConfigNotFoundError("/path/to/config.json");
+      });
+
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["--scope", "local", "my-plugin@owner"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("/path/to/config.json"),
+      );
     });
   });
 });

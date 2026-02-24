@@ -10,16 +10,22 @@ import { JsonConfig } from "#util/JsonConfig.js";
  * in both the global and local configuration.
  */
 export class PluginRescope {
-  private readonly toolbox: ClaudeCodeToolbox;
-  private readonly flagParser: FlagParser<"scope">;
-
   /**
    * Class constructor.
    *
    * @param projectPath - Absolute path to the current project root.
    */
-  constructor(private readonly projectPath: string) {
-    this.flagParser = new FlagParser(["scope"]);
+  constructor(private readonly projectPath: string) {}
+
+  /**
+   * Runs the plugin rescoping workflow.
+   *
+   * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
+   */
+  rescope(args: string[]): void {
+    const flagParser = new FlagParser<"scope">(["scope"]);
+    const { flags, positional: pluginName } = flagParser.parse(args);
+    const scope = flags.scope;
 
     const globalConfigPath = join(
       homedir(),
@@ -29,54 +35,50 @@ export class PluginRescope {
     );
     const localConfigPath = join(".claude", "settings.local.json");
 
-    this.toolbox = new ClaudeCodeToolbox(
+    const toolbox = new ClaudeCodeToolbox(
       new JsonConfig(globalConfigPath),
       new JsonConfig(localConfigPath),
     );
-  }
 
-  /**
-   * Runs the plugin rescoping workflow.
-   *
-   * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
-   */
-  rescope(args: string[]): void {
-    const { flags, positional: pluginName } = this.flagParser.parse(args);
-    const scope = flags.scope;
-
-    const version = this.toolbox.validateInstallation();
+    const version = toolbox.validateInstallation();
 
     if (version === false) {
       console.log("Claude is not installed.");
       return;
     }
 
-    const bindings = this.toolbox.getGlobalPluginConfig(pluginName);
+    try {
+      const bindings = toolbox.getGlobalPluginConfig(pluginName);
 
-    if (bindings.length === 0) {
+      if (bindings.length === 0) {
+        console.log(
+          `Plugin "${pluginName}" not found in global config. No workaround needed.`,
+        );
+        return;
+      }
+
+      const source = bindings[0];
+      const now = new Date().toISOString();
+
+      toolbox.addGlobalPluginBinding(pluginName, {
+        scope: scope || source.scope,
+        installPath: source.installPath,
+        version: source.version,
+        installedAt: source.installedAt,
+        lastUpdated: now,
+        gitCommitSha: source.gitCommitSha,
+        projectPath: this.projectPath,
+      });
+
+      toolbox.addLocalPlugin(pluginName);
+
       console.log(
-        `Plugin "${pluginName}" not found in global config. No workaround needed.`,
+        `Plugin "${pluginName}" rescoped to project "${this.projectPath}".`,
       );
-      return;
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "An unknown error occurred.";
+      console.log(message);
     }
-
-    const source = bindings[0];
-    const now = new Date().toISOString();
-
-    this.toolbox.addGlobalPluginBinding(pluginName, {
-      scope: scope || source.scope,
-      installPath: source.installPath,
-      version: source.version,
-      installedAt: source.installedAt,
-      lastUpdated: now,
-      gitCommitSha: source.gitCommitSha,
-      projectPath: this.projectPath,
-    });
-
-    this.toolbox.addLocalPlugin(pluginName);
-
-    console.log(
-      `Plugin "${pluginName}" rescoped to project "${this.projectPath}".`,
-    );
   }
 }
