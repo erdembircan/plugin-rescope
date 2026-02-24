@@ -188,4 +188,85 @@ describe("ClaudeCodeToolbox", () => {
       });
     });
   });
+
+  describe("getEnabledPlugins", () => {
+    it("returns the enabled plugins map from local config", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({
+        enabledPlugins: {
+          "my-plugin@owner": true,
+          "another-plugin@owner": true,
+        },
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      const result = toolbox.getEnabledPlugins();
+
+      expect(result).toEqual({
+        "my-plugin@owner": true,
+        "another-plugin@owner": true,
+      });
+    });
+
+    it("returns an empty object when enabledPlugins field is missing", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({});
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      const result = toolbox.getEnabledPlugins();
+
+      expect(result).toEqual({});
+    });
+
+    it("propagates ConfigNotFoundError when local config file is missing", () => {
+      vi.mocked(mockLocalConfig.read).mockImplementation(() => {
+        throw new ConfigNotFoundError(".claude/settings.local.json");
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      expect(() => toolbox.getEnabledPlugins()).toThrow(ConfigNotFoundError);
+    });
+  });
+
+  describe("addLocalPlugin", () => {
+    it("adds a plugin to the enabled plugins map", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({
+        enabledPlugins: {
+          "existing-plugin@owner": true,
+        },
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.addLocalPlugin("new-plugin@owner");
+
+      expect(mockLocalConfig.update).toHaveBeenCalledWith({
+        enabledPlugins: {
+          "existing-plugin@owner": true,
+          "new-plugin@owner": true,
+        },
+      });
+    });
+
+    it("creates the enabledPlugins field when it is missing", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({});
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.addLocalPlugin("my-plugin@owner");
+
+      expect(mockLocalConfig.update).toHaveBeenCalledWith({
+        enabledPlugins: {
+          "my-plugin@owner": true,
+        },
+      });
+    });
+
+    it("propagates ConfigNotFoundError when local config file is missing", () => {
+      vi.mocked(mockLocalConfig.read).mockImplementation(() => {
+        throw new ConfigNotFoundError(".claude/settings.local.json");
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      expect(() => toolbox.addLocalPlugin("any-plugin@owner")).toThrow(
+        ConfigNotFoundError,
+      );
+    });
+  });
 });
