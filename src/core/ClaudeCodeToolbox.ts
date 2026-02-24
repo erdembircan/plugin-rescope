@@ -25,12 +25,12 @@ const GLOBAL_CONFIG_PATH = join(
   "installed_plugins.json",
 );
 
-const VERSION_REGEX = /^(\d+\.\d+\.\d+) \(Claude Code\)$/;
+const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
 export class ClaudeCodeToolbox {
   /**
    * Checks whether the Claude CLI is installed by running `claude --version`.
-   * Parses the output against the expected `X.Y.Z (Claude Code)` format.
+   * Parses the output to extract the leading `X.Y.Z` version number.
    *
    * @returns The version string (e.g. `"1.0.0"`) if installed, or `false` if
    *          the CLI is not found or the output does not match the expected format.
