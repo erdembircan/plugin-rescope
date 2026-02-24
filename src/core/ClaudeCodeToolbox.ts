@@ -18,16 +18,12 @@ type GlobalPluginConfig = {
   plugins: Record<string, PluginBinding[]>;
 };
 
-type LocalPluginConfig = Record<string, true>;
-
 const GLOBAL_CONFIG_PATH = join(
   homedir(),
   ".claude",
   "plugins",
   "installed_plugins.json",
 );
-
-const LOCAL_CONFIG_FILENAME = join(".claude", "settings.local.json");
 
 const VERSION_REGEX = /^(\d+\.\d+\.\d+) \(Claude Code\)$/;
 
@@ -87,26 +83,5 @@ export class ClaudeCodeToolbox {
   private updateGlobalConfig(data: GlobalPluginConfig): void {
     const config = new JsonConfig(GLOBAL_CONFIG_PATH);
     config.update(data);
-  }
-
-  private readLocalConfig(projectPath: string): LocalPluginConfig {
-    const configPath = join(projectPath, LOCAL_CONFIG_FILENAME);
-    const config = new JsonConfig(configPath);
-    const settings = config.read() as { enabledPlugins?: LocalPluginConfig };
-    return settings.enabledPlugins ?? {};
-  }
-
-  private updateLocalConfig(projectPath: string, pluginKey: string): void {
-    const configPath = join(projectPath, LOCAL_CONFIG_FILENAME);
-    const config = new JsonConfig(configPath);
-    const settings = config.read() as {
-      enabledPlugins?: LocalPluginConfig;
-      [key: string]: unknown;
-    };
-    settings.enabledPlugins = {
-      ...settings.enabledPlugins,
-      [pluginKey]: true,
-    };
-    config.update(settings);
   }
 }
