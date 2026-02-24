@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { ShellCommandError } from "./ShellCommandError.js";
+import { ShellCommandError } from "#util/ShellCommandError.js";
 
 export class ShellCommand {
   static execute(command: string): string {
