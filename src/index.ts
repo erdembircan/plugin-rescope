@@ -1,1 +1,1 @@
-export { PluginRescope } from "./core/PluginRescope.js";
+export { PluginRescope } from "#core/PluginRescope.js";

@@ -28,6 +28,10 @@
     "build/",
     "LICENSE"
   ],
+  "imports": {
+    "#core/*": "./src/core/*",
+    "#util/*": "./src/util/*"
+  },
   "keywords": [
     "claude",
     "plugin",

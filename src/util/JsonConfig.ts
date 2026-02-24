@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { ConfigNotFoundError } from "./ConfigNotFoundError.js";
+import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
 
 export class JsonConfig {
   private readonly path: string;
