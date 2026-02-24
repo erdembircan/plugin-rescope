@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ClaudeCodeToolbox } from "./ClaudeCodeToolbox.js";
-import { ConfigNotFoundError } from "../util/ConfigNotFoundError.js";
-import { ShellCommandError } from "../util/ShellCommandError.js";
+import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
+import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
+import { ShellCommandError } from "#util/ShellCommandError.js";
 
 const { mockRead, mockUpdate, mockExecute } = vi.hoisted(() => {
   const mockRead = vi.fn();
@@ -11,14 +11,14 @@ const { mockRead, mockUpdate, mockExecute } = vi.hoisted(() => {
   return { mockRead, mockUpdate, mockExecute };
 });
 
-vi.mock("../util/JsonConfig.js", () => ({
+vi.mock("#util/JsonConfig.js", () => ({
   JsonConfig: class MockJsonConfig {
     read = mockRead;
     update = mockUpdate;
   },
 }));
 
-vi.mock("../util/ShellCommand.js", () => ({
+vi.mock("#util/ShellCommand.js", () => ({
   ShellCommand: { execute: mockExecute },
 }));
 
@@ -28,19 +28,28 @@ describe("ClaudeCodeToolbox", () => {
   });
 
   describe("validateInstallation", () => {
-    it("returns the installation path when claude is installed", () => {
-      mockExecute.mockReturnValue("/usr/local/bin/claude");
+    it("returns the version string when claude is installed", () => {
+      mockExecute.mockReturnValue("1.0.27 (Claude Code)");
       const toolbox = new ClaudeCodeToolbox();
 
       const result = toolbox.validateInstallation();
 
-      expect(result).toBe("/usr/local/bin/claude");
+      expect(result).toBe("1.0.27");
     });
 
     it("returns false when claude is not installed", () => {
       mockExecute.mockImplementation(() => {
         throw new ShellCommandError("command not found: claude");
       });
+      const toolbox = new ClaudeCodeToolbox();
+
+      const result = toolbox.validateInstallation();
+
+      expect(result).toBe(false);
+    });
+
+    it("returns false when version output does not match expected format", () => {
+      mockExecute.mockReturnValue("some unexpected output");
       const toolbox = new ClaudeCodeToolbox();
 
       const result = toolbox.validateInstallation();
