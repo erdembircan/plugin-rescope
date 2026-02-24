@@ -1,3 +1,8 @@
+/**
+ * Instance-based generic flag parser for CLI arguments.
+ * Accepts flag definitions at construction and parses argument arrays into
+ * typed flag/positional pairs.
+ */
 export class FlagParser<T extends string> {
   private flags: T[];
 
