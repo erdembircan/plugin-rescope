@@ -1,9 +1,8 @@
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ClaudeCodeToolbox } from "./ClaudeCodeToolbox.js";
-import type { JsonConfig } from "./JsonConfig.js";
-import { ConfigNotFoundError } from "./ConfigNotFoundError.js";
-import { ShellCommandError } from "./ShellCommandError.js";
+import { ConfigNotFoundError } from "../util/ConfigNotFoundError.js";
+import { ShellCommandError } from "../util/ShellCommandError.js";
 
 function createMockJsonConfig(data: object = {}) {
   const readMock = vi.fn().mockReturnValue(data);
@@ -20,7 +19,7 @@ function createMockJsonConfig(data: object = {}) {
   }
 
   return {
-    MockJsonConfig: MockJsonConfig as unknown as typeof JsonConfig,
+    MockJsonConfig,
     readMock,
     updateMock,
     constructorSpy,
@@ -30,7 +29,7 @@ function createMockJsonConfig(data: object = {}) {
 function createMockShellCommand(returnValue: string = "/usr/local/bin/claude") {
   return {
     execute: vi.fn().mockReturnValue(returnValue),
-  } as unknown as typeof import("./ShellCommand.js").ShellCommand;
+  };
 }
 
 function createFailingShellCommand() {
@@ -38,7 +37,7 @@ function createFailingShellCommand() {
     execute: vi.fn().mockImplementation(() => {
       throw new ShellCommandError("command not found: claude");
     }),
-  } as unknown as typeof import("./ShellCommand.js").ShellCommand;
+  };
 }
 
 describe("ClaudeCodeToolbox", () => {

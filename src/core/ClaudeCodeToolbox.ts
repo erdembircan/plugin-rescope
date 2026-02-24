@@ -1,9 +1,7 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { JsonConfig } from "./JsonConfig.js";
-import { ShellCommand } from "./ShellCommand.js";
 
-export type PluginBinding = {
+type PluginBinding = {
   scope: string;
   installPath: string;
   version: string;
@@ -13,9 +11,22 @@ export type PluginBinding = {
   projectPath: string;
 };
 
-export type GlobalPluginConfig = Record<string, PluginBinding[]>;
+type GlobalPluginConfig = Record<string, PluginBinding[]>;
 
-export type LocalPluginConfig = Record<string, true>;
+type LocalPluginConfig = Record<string, true>;
+
+interface ShellCommandLike {
+  execute(command: string): string;
+}
+
+interface JsonConfigConstructor {
+  new (path: string): JsonConfigLike;
+}
+
+interface JsonConfigLike {
+  read(): object;
+  update(data: object): void;
+}
 
 const GLOBAL_CONFIG_PATH = join(
   homedir(),
@@ -27,16 +38,10 @@ const GLOBAL_CONFIG_PATH = join(
 const LOCAL_CONFIG_FILENAME = join(".claude", "settings.local.json");
 
 export class ClaudeCodeToolbox {
-  private readonly shellCommand: typeof ShellCommand;
-  private readonly jsonConfig: typeof JsonConfig;
-
   constructor(
-    shellCommand: typeof ShellCommand,
-    jsonConfig: typeof JsonConfig,
-  ) {
-    this.shellCommand = shellCommand;
-    this.jsonConfig = jsonConfig;
-  }
+    private readonly shellCommand: ShellCommandLike,
+    private readonly jsonConfig: JsonConfigConstructor,
+  ) {}
 
   validateInstallation(): false | string {
     try {
