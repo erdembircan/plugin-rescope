@@ -1,5 +1,3 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { JsonConfig } from "#util/JsonConfig.js";
 import { ShellCommand } from "#util/ShellCommand.js";
 
@@ -30,17 +28,6 @@ type LocalSettings = {
  * plugin registry, and manage local project plugin settings.
  */
 export class ClaudeCodeToolbox {
-  /** Absolute path to the global plugin registry file. */
-  static readonly GLOBAL_CONFIG_PATH = join(
-    homedir(),
-    ".claude",
-    "plugins",
-    "installed_plugins.json",
-  );
-
-  /** Absolute path to the local project settings file. */
-  static readonly LOCAL_CONFIG_PATH = join(".claude", "settings.local.json");
-
   /**
    * Class constructor.
    *

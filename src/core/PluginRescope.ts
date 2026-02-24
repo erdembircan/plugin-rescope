@@ -1,3 +1,5 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { FlagParser } from "#util/FlagParser.js";
 import { JsonConfig } from "#util/JsonConfig.js";
@@ -18,9 +20,18 @@ export class PluginRescope {
    */
   constructor(private readonly projectPath: string) {
     this.flagParser = new FlagParser(["scope"]);
+
+    const globalConfigPath = join(
+      homedir(),
+      ".claude",
+      "plugins",
+      "installed_plugins.json",
+    );
+    const localConfigPath = join(".claude", "settings.local.json");
+
     this.toolbox = new ClaudeCodeToolbox(
-      new JsonConfig(ClaudeCodeToolbox.GLOBAL_CONFIG_PATH),
-      new JsonConfig(ClaudeCodeToolbox.LOCAL_CONFIG_PATH),
+      new JsonConfig(globalConfigPath),
+      new JsonConfig(localConfigPath),
     );
   }
 

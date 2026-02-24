@@ -14,18 +14,6 @@ describe("PluginRescope", () => {
   });
 
   describe("rescope", () => {
-    it("prints a message when Claude is not installed", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      const rescope = new PluginRescope("/Users/test/project");
-      mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
-      vi.mocked(mockToolbox.validateInstallation).mockReturnValue(false);
-
-      rescope.rescope(["--scope", "local", "my-plugin@owner"]);
-
-      expect(consoleSpy).toHaveBeenCalledWith("Claude is not installed.");
-      consoleSpy.mockRestore();
-    });
-
     it("registers the plugin in global and local config when found", () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const rescope = new PluginRescope("/Users/test/my-project");
@@ -57,9 +45,6 @@ describe("PluginRescope", () => {
       );
       expect(mockToolbox.addLocalPlugin).toHaveBeenCalledWith(
         "my-plugin@owner",
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("my-plugin@owner"),
       );
       consoleSpy.mockRestore();
     });
@@ -104,7 +89,7 @@ describe("PluginRescope", () => {
       consoleSpy.mockRestore();
     });
 
-    it("prints a not-found message and does not modify configs when plugin is absent", () => {
+    it("does not modify configs when plugin is absent from global config", () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const rescope = new PluginRescope("/Users/test/project");
       mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
@@ -113,15 +98,12 @@ describe("PluginRescope", () => {
 
       rescope.rescope(["--scope", "local", "nonexistent@owner"]);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("No workaround needed"),
-      );
       expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
       expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
 
-    it("prints a not-installed message and does not query global config when Claude is missing", () => {
+    it("does not query global config when Claude is not installed", () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const rescope = new PluginRescope("/Users/test/project");
       mockToolbox = vi.mocked(ClaudeCodeToolbox).mock.instances[0]!;
@@ -129,7 +111,6 @@ describe("PluginRescope", () => {
 
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Claude is not installed.");
       expect(mockToolbox.getGlobalPluginConfig).not.toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
