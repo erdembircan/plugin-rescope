@@ -16,6 +16,10 @@ type GlobalPluginConfig = {
   plugins: Record<string, PluginBinding[]>;
 };
 
+type LocalSettings = {
+  enabledPlugins: Record<string, boolean>;
+};
+
 const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
 export class ClaudeCodeToolbox {
@@ -71,11 +75,47 @@ export class ClaudeCodeToolbox {
     this.updateGlobalConfig(config);
   }
 
+  /**
+   * Reads the enabled plugins map from the local project settings file
+   * (`.claude/settings.local.json`).
+   *
+   * @returns A record mapping plugin names to their enabled state, or an
+   *          empty object if the `enabledPlugins` field is missing.
+   * @throws {ConfigNotFoundError} If the local config file does not exist.
+   */
+  getEnabledPlugins(): Record<string, boolean> {
+    const config = this.readLocalConfig();
+    return config.enabledPlugins ?? {};
+  }
+
+  /**
+   * Adds a plugin to the local project settings by setting its enabled
+   * state to `true`.
+   *
+   * @param pluginName - The plugin name to enable.
+   * @throws {ConfigNotFoundError} If the local config file does not exist.
+   */
+  addLocalPlugin(pluginName: string): void {
+    const config = this.readLocalConfig();
+    const enabledPlugins = config.enabledPlugins ?? {};
+    enabledPlugins[pluginName] = true;
+    config.enabledPlugins = enabledPlugins;
+    this.updateLocalConfig(config);
+  }
+
   private readGlobalConfig(): GlobalPluginConfig {
     return this.globalConfig.read() as GlobalPluginConfig;
   }
 
   private updateGlobalConfig(data: GlobalPluginConfig): void {
     this.globalConfig.update(data);
+  }
+
+  private readLocalConfig(): LocalSettings {
+    return this.localConfig.read() as LocalSettings;
+  }
+
+  private updateLocalConfig(data: LocalSettings): void {
+    this.localConfig.update(data);
   }
 }
