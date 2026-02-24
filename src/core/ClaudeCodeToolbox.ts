@@ -1,6 +1,7 @@
 import { JsonConfig } from "#util/JsonConfig.js";
 import { ShellCommand } from "#util/ShellCommand.js";
 
+/** A single plugin installation record stored in the global config. */
 type PluginBinding = {
   scope: string;
   installPath: string;
@@ -11,11 +12,13 @@ type PluginBinding = {
   projectPath: string;
 };
 
+/** Shape of the global plugin configuration file (`~/.claude/plugins/installed_plugins.json`). */
 type GlobalPluginConfig = {
   version: number;
   plugins: Record<string, PluginBinding[]>;
 };
 
+/** Shape of the local project settings file (`.claude/settings.local.json`). */
 type LocalSettings = {
   enabledPlugins?: Record<string, boolean>;
 };
@@ -23,6 +26,10 @@ type LocalSettings = {
 const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
 export class ClaudeCodeToolbox {
+  /**
+   * @param globalConfig - Config handle for the global plugin registry file.
+   * @param localConfig - Config handle for the local project settings file.
+   */
   constructor(
     private readonly globalConfig: JsonConfig,
     private readonly localConfig: JsonConfig,
