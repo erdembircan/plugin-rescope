@@ -1,36 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
+import { JsonConfig } from "#util/JsonConfig.js";
+import { ShellCommand } from "#util/ShellCommand.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
 import { ShellCommandError } from "#util/ShellCommandError.js";
 
-const { mockRead, mockUpdate, mockExecute } = vi.hoisted(() => {
-  const mockRead = vi.fn();
-  const mockUpdate = vi.fn();
-  const mockExecute = vi.fn();
-
-  return { mockRead, mockUpdate, mockExecute };
-});
-
-vi.mock("#util/JsonConfig.js", () => ({
-  JsonConfig: class MockJsonConfig {
-    read = mockRead;
-    update = mockUpdate;
-  },
-}));
-
-vi.mock("#util/ShellCommand.js", () => ({
-  ShellCommand: { execute: mockExecute },
-}));
+vi.mock("#util/JsonConfig.js");
+vi.mock("#util/ShellCommand.js");
 
 describe("ClaudeCodeToolbox", () => {
+  let mockGlobalConfig: JsonConfig;
+  let mockLocalConfig: JsonConfig;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGlobalConfig = new JsonConfig("fake-global-path");
+    mockLocalConfig = new JsonConfig("fake-local-path");
   });
 
   describe("validateInstallation", () => {
     it("returns the version string when claude is installed", () => {
-      mockExecute.mockReturnValue("1.0.27 (Claude Code)");
-      const toolbox = new ClaudeCodeToolbox();
+      vi.mocked(ShellCommand.execute).mockReturnValue("1.0.27 (Claude Code)");
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
 
@@ -38,10 +29,10 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when claude is not installed", () => {
-      mockExecute.mockImplementation(() => {
+      vi.mocked(ShellCommand.execute).mockImplementation(() => {
         throw new ShellCommandError("command not found: claude");
       });
-      const toolbox = new ClaudeCodeToolbox();
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
 
@@ -49,8 +40,8 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when version output does not match expected format", () => {
-      mockExecute.mockReturnValue("some unexpected output");
-      const toolbox = new ClaudeCodeToolbox();
+      vi.mocked(ShellCommand.execute).mockReturnValue("some unexpected output");
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
 
@@ -58,8 +49,10 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when version is not at the start of the output", () => {
-      mockExecute.mockReturnValue("version: 1.0.27 (Claude Code)");
-      const toolbox = new ClaudeCodeToolbox();
+      vi.mocked(ShellCommand.execute).mockReturnValue(
+        "version: 1.0.27 (Claude Code)",
+      );
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
 
@@ -67,8 +60,8 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns false when there is no space after the version number", () => {
-      mockExecute.mockReturnValue("1.0.27(Claude Code)");
-      const toolbox = new ClaudeCodeToolbox();
+      vi.mocked(ShellCommand.execute).mockReturnValue("1.0.27(Claude Code)");
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.validateInstallation();
 
@@ -90,13 +83,13 @@ describe("ClaudeCodeToolbox", () => {
           projectPath: "/Users/test/project",
         },
       ];
-      mockRead.mockReturnValue({
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({
         version: 2,
         plugins: {
           "testing-philosophy@erdembircan-plugins": bindings,
         },
       });
-      const toolbox = new ClaudeCodeToolbox();
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.getGlobalPluginConfig(
         "testing-philosophy@erdembircan-plugins",
@@ -106,11 +99,11 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("returns an empty array when the plugin is not found", () => {
-      mockRead.mockReturnValue({
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({
         version: 2,
         plugins: {},
       });
-      const toolbox = new ClaudeCodeToolbox();
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       const result = toolbox.getGlobalPluginConfig("nonexistent@owner");
 
@@ -118,12 +111,12 @@ describe("ClaudeCodeToolbox", () => {
     });
 
     it("propagates ConfigNotFoundError when config file is missing", () => {
-      mockRead.mockImplementation(() => {
+      vi.mocked(mockGlobalConfig.read).mockImplementation(() => {
         throw new ConfigNotFoundError(
           "~/.claude/plugins/installed_plugins.json",
         );
       });
-      const toolbox = new ClaudeCodeToolbox();
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       expect(() => toolbox.getGlobalPluginConfig("any-plugin@owner")).toThrow(
         ConfigNotFoundError,
@@ -151,17 +144,17 @@ describe("ClaudeCodeToolbox", () => {
         gitCommitSha: "abc123",
         projectPath: "/Users/test/project-b",
       };
-      mockRead.mockReturnValue({
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({
         version: 2,
         plugins: {
           "my-plugin@owner": [existingBinding],
         },
       });
-      const toolbox = new ClaudeCodeToolbox();
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       toolbox.addGlobalPluginBinding("my-plugin@owner", newBinding);
 
-      expect(mockUpdate).toHaveBeenCalledWith({
+      expect(mockGlobalConfig.update).toHaveBeenCalledWith({
         version: 2,
         plugins: {
           "my-plugin@owner": [existingBinding, newBinding],
@@ -179,15 +172,15 @@ describe("ClaudeCodeToolbox", () => {
         gitCommitSha: "def456",
         projectPath: "/Users/test/project",
       };
-      mockRead.mockReturnValue({
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({
         version: 2,
         plugins: {},
       });
-      const toolbox = new ClaudeCodeToolbox();
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
       toolbox.addGlobalPluginBinding("new-plugin@owner", newBinding);
 
-      expect(mockUpdate).toHaveBeenCalledWith({
+      expect(mockGlobalConfig.update).toHaveBeenCalledWith({
         version: 2,
         plugins: {
           "new-plugin@owner": [newBinding],

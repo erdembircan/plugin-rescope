@@ -1,5 +1,3 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { JsonConfig } from "#util/JsonConfig.js";
 import { ShellCommand } from "#util/ShellCommand.js";
 
@@ -18,16 +16,14 @@ type GlobalPluginConfig = {
   plugins: Record<string, PluginBinding[]>;
 };
 
-const GLOBAL_CONFIG_PATH = join(
-  homedir(),
-  ".claude",
-  "plugins",
-  "installed_plugins.json",
-);
-
 const VERSION_REGEX = /^(\d+\.\d+\.\d+)\s/;
 
 export class ClaudeCodeToolbox {
+  constructor(
+    private readonly globalConfig: JsonConfig,
+    private readonly localConfig: JsonConfig,
+  ) {}
+
   /**
    * Checks whether the Claude CLI is installed by running `claude --version`.
    * Parses the output to extract the leading `X.Y.Z` version number.
@@ -76,12 +72,10 @@ export class ClaudeCodeToolbox {
   }
 
   private readGlobalConfig(): GlobalPluginConfig {
-    const config = new JsonConfig(GLOBAL_CONFIG_PATH);
-    return config.read() as GlobalPluginConfig;
+    return this.globalConfig.read() as GlobalPluginConfig;
   }
 
   private updateGlobalConfig(data: GlobalPluginConfig): void {
-    const config = new JsonConfig(GLOBAL_CONFIG_PATH);
-    config.update(data);
+    this.globalConfig.update(data);
   }
 }
