@@ -56,6 +56,24 @@ describe("ClaudeCodeToolbox", () => {
 
       expect(result).toBe(false);
     });
+
+    it("returns false when version is not at the start of the output", () => {
+      mockExecute.mockReturnValue("version: 1.0.27 (Claude Code)");
+      const toolbox = new ClaudeCodeToolbox();
+
+      const result = toolbox.validateInstallation();
+
+      expect(result).toBe(false);
+    });
+
+    it("returns false when there is no space after the version number", () => {
+      mockExecute.mockReturnValue("1.0.27(Claude Code)");
+      const toolbox = new ClaudeCodeToolbox();
+
+      const result = toolbox.validateInstallation();
+
+      expect(result).toBe(false);
+    });
   });
 
   describe("getGlobalPluginConfig", () => {
