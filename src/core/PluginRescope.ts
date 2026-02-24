@@ -1,5 +1,6 @@
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { FlagParser } from "#util/FlagParser.js";
+import { JsonConfig } from "#util/JsonConfig.js";
 
 /**
  * Orchestrates the plugin rescoping workflow: parses CLI arguments,
@@ -7,47 +8,45 @@ import { FlagParser } from "#util/FlagParser.js";
  * in both the global and local configuration.
  */
 export class PluginRescope {
+  private readonly toolbox: ClaudeCodeToolbox;
+  private readonly flagParser: FlagParser<"scope">;
+
   /**
    * Class constructor.
    *
-   * @param toolbox - Manages Claude CLI and configuration file interactions.
-   * @param flagParser - Parses CLI arguments into flags and positional args.
    * @param projectPath - Absolute path to the current project root.
    */
-  constructor(
-    private readonly toolbox: ClaudeCodeToolbox,
-    private readonly flagParser: FlagParser<"scope">,
-    private readonly projectPath: string,
-  ) {}
+  constructor(private readonly projectPath: string) {
+    this.flagParser = new FlagParser(["scope"]);
+    this.toolbox = new ClaudeCodeToolbox(
+      new JsonConfig(ClaudeCodeToolbox.GLOBAL_CONFIG_PATH),
+      new JsonConfig(ClaudeCodeToolbox.LOCAL_CONFIG_PATH),
+    );
+  }
 
   /**
    * Runs the plugin rescoping workflow.
    *
-   * 1. Parses `args` to extract the `--scope` flag and `plugin_name` positional arg.
-   * 2. Validates that the Claude CLI is installed (throws if not).
-   * 3. Looks up `plugin_name` in the global plugin config.
-   * 4. If found: creates a new binding for the current project and adds the
-   *    plugin to the local project settings.
-   * 5. If not found: returns a message indicating no workaround is needed.
-   *
    * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
-   * @returns A status message describing what was done.
-   * @throws {Error} If the Claude CLI is not installed.
    */
-  rescope(args: string[]): string {
+  rescope(args: string[]): void {
     const { flags, positional: pluginName } = this.flagParser.parse(args);
     const scope = flags.scope;
 
     const version = this.toolbox.validateInstallation();
 
     if (version === false) {
-      throw new Error("Claude is not installed");
+      console.log("Claude is not installed.");
+      return;
     }
 
     const bindings = this.toolbox.getGlobalPluginConfig(pluginName);
 
     if (bindings.length === 0) {
-      return `Plugin "${pluginName}" not found in global config. No workaround needed.`;
+      console.log(
+        `Plugin "${pluginName}" not found in global config. No workaround needed.`,
+      );
+      return;
     }
 
     const source = bindings[0];
@@ -65,6 +64,8 @@ export class PluginRescope {
 
     this.toolbox.addLocalPlugin(pluginName);
 
-    return `Plugin "${pluginName}" rescoped to project "${this.projectPath}".`;
+    console.log(
+      `Plugin "${pluginName}" rescoped to project "${this.projectPath}".`,
+    );
   }
 }
