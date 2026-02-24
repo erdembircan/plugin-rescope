@@ -58,21 +58,21 @@ describe("FlagParser", () => {
   });
 
   it("auto-corrects flag names that include the -- prefix", () => {
-    const parser = new FlagParser(["--scope"]);
+    const parser: FlagParser<string> = new FlagParser(["--scope"]);
     const result = parser.parse(["--scope", "local"]);
 
     expect(result.flags["scope"]).toBe("local");
   });
 
   it("trims whitespace from flag names", () => {
-    const parser = new FlagParser(["  scope  "]);
+    const parser: FlagParser<string> = new FlagParser(["  scope  "]);
     const result = parser.parse(["--scope", "local"]);
 
     expect(result.flags["scope"]).toBe("local");
   });
 
   it("removes internal spaces from flag names", () => {
-    const parser = new FlagParser(["my flag"]);
+    const parser: FlagParser<string> = new FlagParser(["my flag"]);
     const result = parser.parse(["--myflag", "value"]);
 
     expect(result.flags["myflag"]).toBe("value");
