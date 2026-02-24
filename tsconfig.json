@@ -5,8 +5,6 @@
     "moduleResolution": "NodeNext",
     "outDir": "./build",
     "rootDir": "./src",
-    "declaration": true,
-    "declarationMap": true,
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,

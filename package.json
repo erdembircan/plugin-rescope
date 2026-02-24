@@ -2,11 +2,9 @@
   "name": "plugin-rescope",
   "version": "1.0.0-dev",
   "description": "Workarounds to rescope Claude Code plugins across projects",
-  "main": "./build/index.js",
-  "types": "./build/index.d.ts",
   "type": "module",
   "bin": {
-    "plugin-rescope": "./build/index.js"
+    "plugin-rescope": "./bin/plugin-rescope.js"
   },
   "scripts": {
     "build": "tsc && npm run minify",
@@ -26,6 +24,7 @@
     "node": ">=18.0.0"
   },
   "files": [
+    "bin/",
     "build/",
     "LICENSE"
   ],
