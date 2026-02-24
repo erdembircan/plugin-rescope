@@ -11,7 +11,7 @@
     "minify": "terser build/index.js -o build/index.js --module --compress --mangle",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
     "test": "vitest run --passWithNoTests",
     "prepare": "husky"
   },
