@@ -266,22 +266,18 @@ describe("FlagParser", () => {
     });
 
     it("normalizes boolean flag names by stripping -- prefix", () => {
-      const parser: FlagParser<string, never, string> = new FlagParser(
-        [],
-        undefined,
-        ["--help"],
-      );
+      const parser = new FlagParser<never, never, string>([], undefined, [
+        "--help",
+      ]);
       const result = parser.parse(["--help"]);
 
       expect(result.flags["help"]).toBe(true);
     });
 
     it("trims whitespace from boolean flag names", () => {
-      const parser: FlagParser<string, never, string> = new FlagParser(
-        [],
-        undefined,
-        ["  help  "],
-      );
+      const parser = new FlagParser<never, never, string>([], undefined, [
+        "  help  ",
+      ]);
       const result = parser.parse(["--help"]);
 
       expect(result.flags["help"]).toBe(true);
