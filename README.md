@@ -72,6 +72,21 @@ Show help:
 npx plugin-rescope --help
 ```
 
+### Global Install
+
+If you prefer not to use `npx`, install globally:
+
+```bash
+npm install -g plugin-rescope
+```
+
+Then run the command directly:
+
+```bash
+plugin-rescope my-plugin@marketplace
+plugin-rescope remove my-plugin@marketplace
+```
+
 ## Requirements
 
 - Node.js >= 18.0.0
