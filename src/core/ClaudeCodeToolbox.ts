@@ -117,6 +117,39 @@ export class ClaudeCodeToolbox {
     this.updateLocalConfig(config);
   }
 
+  /**
+   * Removes bindings that match a given project path from a plugin's entry
+   * in the global plugin configuration. If no bindings remain after removal,
+   * the plugin key is left as an empty array.
+   *
+   * @param pluginName - The plugin key in `name@marketplace` format.
+   * @param projectPath - The project path whose bindings should be removed.
+   * @throws {ConfigNotFoundError} If the global config file does not exist.
+   */
+  removeGlobalPluginBinding(pluginName: string, projectPath: string): void {
+    const config = this.readGlobalConfig();
+    const plugins = config.plugins ?? {};
+    const existing = plugins[pluginName] ?? [];
+    plugins[pluginName] = existing.filter((b) => b.projectPath !== projectPath);
+    config.plugins = plugins;
+    this.updateGlobalConfig(config);
+  }
+
+  /**
+   * Removes a plugin from the local project settings by deleting its key
+   * from the `enabledPlugins` map.
+   *
+   * @param pluginName - The plugin name to remove.
+   * @throws {ConfigNotFoundError} If the local config file does not exist.
+   */
+  removeLocalPlugin(pluginName: string): void {
+    const config = this.readLocalConfig();
+    const enabledPlugins = config.enabledPlugins ?? {};
+    delete enabledPlugins[pluginName];
+    config.enabledPlugins = enabledPlugins;
+    this.updateLocalConfig(config);
+  }
+
   private readGlobalConfig(): GlobalPluginConfig {
     return this.globalConfig.read() as GlobalPluginConfig;
   }
