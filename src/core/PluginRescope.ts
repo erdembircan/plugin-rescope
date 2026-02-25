@@ -24,16 +24,26 @@ export class PluginRescope {
    * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
    */
   rescope(args: string[]): void {
-    if (args.includes("--help")) {
+    const flagParser = new FlagParser<"scope", "add" | "remove", "help">(
+      ["scope"],
+      {
+        commands: ["add", "remove"],
+        default: "add",
+      },
+      ["help"],
+    );
+    const {
+      command,
+      flags,
+      booleanFlags,
+      positionals: pluginNames,
+    } = flagParser.parse(args);
+
+    if (booleanFlags.help) {
       console.log(getHelpText());
       return;
     }
 
-    const flagParser = new FlagParser<"scope", "add" | "remove">(["scope"], {
-      commands: ["add", "remove"],
-      default: "add",
-    });
-    const { command, flags, positionals: pluginNames } = flagParser.parse(args);
     const scope = flags.scope;
 
     if (pluginNames.length === 0) {
