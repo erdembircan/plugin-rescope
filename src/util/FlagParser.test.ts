@@ -108,4 +108,78 @@ describe("FlagParser", () => {
     expect(result.flags["output"]).toBe("dist");
     expect(result.positionals).toEqual(["plugin-a", "plugin-b", "plugin-c"]);
   });
+
+  it("returns empty string for command when no commands are configured", () => {
+    const parser = new FlagParser(["scope"]);
+    const result = parser.parse(["--scope", "local", "my-plugin"]);
+
+    expect(result.command).toBe("");
+  });
+
+  describe("command extraction", () => {
+    it("extracts a matching command from the first argument", () => {
+      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const result = parser.parse(["add", "--scope", "local", "my-plugin"]);
+
+      expect(result.command).toBe("add");
+      expect(result.flags["scope"]).toBe("local");
+      expect(result.positionals).toEqual(["my-plugin"]);
+    });
+
+    it("extracts the remove command from the first argument", () => {
+      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const result = parser.parse(["remove", "my-plugin"]);
+
+      expect(result.command).toBe("remove");
+      expect(result.positionals).toEqual(["my-plugin"]);
+    });
+
+    it("defaults to the first command when the first argument is not a command", () => {
+      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const result = parser.parse(["--scope", "local", "my-plugin"]);
+
+      expect(result.command).toBe("add");
+      expect(result.flags["scope"]).toBe("local");
+      expect(result.positionals).toEqual(["my-plugin"]);
+    });
+
+    it("does not consume a non-command first argument as a command", () => {
+      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const result = parser.parse(["my-plugin"]);
+
+      expect(result.command).toBe("add");
+      expect(result.positionals).toEqual(["my-plugin"]);
+    });
+
+    it("defaults to the first command when args is empty", () => {
+      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const result = parser.parse([]);
+
+      expect(result.command).toBe("add");
+      expect(result.positionals).toEqual([]);
+    });
+
+    it("returns the command with no positionals when only a command is given", () => {
+      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const result = parser.parse(["remove"]);
+
+      expect(result.command).toBe("remove");
+      expect(result.positionals).toEqual([]);
+    });
+
+    it("extracts command alongside flags and multiple positionals", () => {
+      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const result = parser.parse([
+        "add",
+        "--scope",
+        "local",
+        "plugin-a",
+        "plugin-b",
+      ]);
+
+      expect(result.command).toBe("add");
+      expect(result.flags["scope"]).toBe("local");
+      expect(result.positionals).toEqual(["plugin-a", "plugin-b"]);
+    });
+  });
 });

@@ -4,12 +4,6 @@ import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { FlagParser } from "#util/FlagParser.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 
-/** Valid command names for the CLI. */
-type Command = "add" | "remove";
-
-/** Known command names used to distinguish the command positional from plugin names. */
-const COMMANDS: ReadonlySet<string> = new Set<Command>(["add", "remove"]);
-
 /**
  * Orchestrates the plugin rescoping workflow: parses CLI arguments,
  * validates the Claude CLI installation, and registers or unregisters
@@ -29,10 +23,11 @@ export class PluginRescope {
    * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
    */
   rescope(args: string[]): void {
-    const { command, remainingArgs } = this.extractCommand(args);
-
-    const flagParser = new FlagParser<"scope">(["scope"]);
-    const { flags, positionals: pluginNames } = flagParser.parse(remainingArgs);
+    const flagParser = new FlagParser<"scope", "add" | "remove">(
+      ["scope"],
+      ["add", "remove"],
+    );
+    const { command, flags, positionals: pluginNames } = flagParser.parse(args);
     const scope = flags.scope;
 
     if (pluginNames.length === 0) {
@@ -76,26 +71,6 @@ export class PluginRescope {
         console.log(message);
       }
     }
-  }
-
-  /**
-   * Extracts the command from the raw args array. The command must be the
-   * first argument (immediately after the CLI name). If the first argument
-   * is a known command name it is consumed; otherwise defaults to `"add"`
-   * and the full args array is returned unchanged.
-   */
-  private extractCommand(args: string[]): {
-    command: Command;
-    remainingArgs: string[];
-  } {
-    if (args.length > 0 && COMMANDS.has(args[0])) {
-      return {
-        command: args[0] as Command,
-        remainingArgs: args.slice(1),
-      };
-    }
-
-    return { command: "add", remainingArgs: args };
   }
 
   /**
