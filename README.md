@@ -18,16 +18,64 @@ npm install -g plugin-rescope
 
 ## Usage
 
-Run from the project directory where you want the plugin:
-
-```bash
-plugin-rescope --scope local my-plugin@marketplace
+```
+plugin-rescope [add|remove] [options] <plugin> [<plugin> ...]
 ```
 
-Or skip the global install with `npx`:
+Run from the project directory where you want the plugin.
+
+### Commands
+
+| Command  | Description                                         |
+| -------- | --------------------------------------------------- |
+| `add`    | Register plugin(s) for the current project (default)|
+| `remove` | Unregister plugin(s) from the current project       |
+
+When no command is specified, `add` is used.
+
+### Options
+
+| Option           | Description                                  |
+| ---------------- | -------------------------------------------- |
+| `--scope <scope>`| Override the plugin scope (e.g. local, global)|
+| `--help`         | Show the help message                        |
+
+### Examples
+
+Add a single plugin to the current project:
+
+```bash
+plugin-rescope my-plugin@marketplace
+```
+
+Explicitly use the `add` command with a scope override:
+
+```bash
+plugin-rescope add --scope local my-plugin@marketplace
+```
+
+Add multiple plugins at once:
+
+```bash
+plugin-rescope my-plugin@marketplace another-plugin@marketplace
+```
+
+Remove a plugin from the current project:
+
+```bash
+plugin-rescope remove my-plugin@marketplace
+```
+
+Skip the global install with `npx`:
 
 ```bash
 npx plugin-rescope --scope local my-plugin@marketplace
+```
+
+Show help:
+
+```bash
+plugin-rescope --help
 ```
 
 ## Requirements
