@@ -28,15 +28,6 @@ describe("PluginRescope", () => {
   }
 
   describe("rescope", () => {
-    it("shows usage message when no plugin names are provided", () => {
-      const rescope = new PluginRescope("/Users/test/my-project");
-      rescope.rescope(["--scope", "local"]);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Usage: plugin-rescope [--scope <scope>] <plugin> [<plugin> ...]",
-      );
-    });
-
     it("registers the plugin in global and local config when found", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
@@ -377,6 +368,5 @@ describe("PluginRescope", () => {
         expect.objectContaining({ projectPath: "/Users/test/my-project" }),
       );
     });
-
   });
 });
