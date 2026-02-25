@@ -64,6 +64,16 @@ export class PluginRescope {
         (b) => b.scope === targetScope && b.projectPath === this.projectPath,
       );
 
+      const enabledPlugins = toolbox.getEnabledPlugins();
+      const alreadyEnabled = !!enabledPlugins[pluginName];
+
+      if (alreadyBound && alreadyEnabled) {
+        console.log(
+          `Plugin "${pluginName}" is already configured for this project. If it is not working, the issue may be outside the scope of this package.`,
+        );
+        return;
+      }
+
       if (!alreadyBound) {
         const now = new Date().toISOString();
 
@@ -78,16 +88,9 @@ export class PluginRescope {
         });
       }
 
-      const enabledPlugins = toolbox.getEnabledPlugins();
-
-      if (enabledPlugins[pluginName]) {
-        console.log(
-          `Plugin "${pluginName}" is already configured for this project. If it is not working, the issue may be outside the scope of this package.`,
-        );
-        return;
+      if (!alreadyEnabled) {
+        toolbox.addLocalPlugin(pluginName);
       }
-
-      toolbox.addLocalPlugin(pluginName);
 
       console.log(
         `Plugin "${pluginName}" rescoped to project "${this.projectPath}".`,
