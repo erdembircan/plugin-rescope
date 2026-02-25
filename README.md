@@ -81,7 +81,6 @@ plugin-rescope --help
 ## Requirements
 
 - Node.js >= 18.0.0
-- Claude CLI installed
 
 ## License
 
