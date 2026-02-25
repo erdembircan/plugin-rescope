@@ -40,6 +40,14 @@ When no command is specified, `add` is used.
 | `--scope <scope>`| Override the plugin scope (e.g. local, global)|
 | `--help`         | Show the help message                        |
 
+### Recommended: Use npx
+
+The easiest way to run `plugin-rescope` is with `npx`, which comes bundled with Node.js. It downloads and runs the package on the fly -- no global install required and you always get the latest version:
+
+```bash
+npx plugin-rescope my-plugin@marketplace
+```
+
 ### Examples
 
 Add a single plugin to the current project:
