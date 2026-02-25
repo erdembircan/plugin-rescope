@@ -368,5 +368,192 @@ describe("PluginRescope", () => {
         expect.objectContaining({ projectPath: "/Users/test/my-project" }),
       );
     });
+
+    it("uses add command when 'add' is explicitly passed", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "global",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/other-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["add", "--scope", "local", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
+        "my-plugin@owner",
+        expect.objectContaining({
+          scope: "local",
+          projectPath: "/Users/test/my-project",
+        }),
+      );
+      expect(mockToolbox.addLocalPlugin).toHaveBeenCalledWith(
+        "my-plugin@owner",
+      );
+    });
+
+    it("shows usage when only the command is given with no plugin names", () => {
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["add"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Usage:"),
+      );
+    });
+
+    it("shows usage when only the remove command is given with no plugin names", () => {
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Usage:"),
+      );
+    });
+  });
+
+  describe("rescope with remove command", () => {
+    it("removes the plugin from global and local config", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.removeGlobalPluginBinding).toHaveBeenCalledWith(
+        "my-plugin@owner",
+        "/Users/test/my-project",
+      );
+      expect(mockToolbox.removeLocalPlugin).toHaveBeenCalledWith(
+        "my-plugin@owner",
+      );
+    });
+
+    it("removes multiple plugins in sequence", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "plugin-a@owner", "plugin-b@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.removeGlobalPluginBinding).toHaveBeenCalledWith(
+        "plugin-a@owner",
+        "/Users/test/my-project",
+      );
+      expect(mockToolbox.removeGlobalPluginBinding).toHaveBeenCalledWith(
+        "plugin-b@owner",
+        "/Users/test/my-project",
+      );
+      expect(mockToolbox.removeLocalPlugin).toHaveBeenCalledWith(
+        "plugin-a@owner",
+      );
+      expect(mockToolbox.removeLocalPlugin).toHaveBeenCalledWith(
+        "plugin-b@owner",
+      );
+    });
+
+    it("does not call add methods when removing", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
+      expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
+      expect(mockToolbox.getGlobalPluginConfig).not.toHaveBeenCalled();
+      expect(mockToolbox.getEnabledPlugins).not.toHaveBeenCalled();
+    });
+
+    it("does not remove when Claude is not installed", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue(false);
+
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.removeGlobalPluginBinding).not.toHaveBeenCalled();
+      expect(mockToolbox.removeLocalPlugin).not.toHaveBeenCalled();
+    });
+
+    it("does not throw when removal raises an error", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.removeGlobalPluginBinding,
+      ).mockImplementationOnce(() => {
+        throw new ConfigNotFoundError("/path/to/config.json");
+      });
+
+      const rescope = new PluginRescope("/Users/test/project");
+      expect(() =>
+        rescope.rescope(["remove", "my-plugin@owner"]),
+      ).not.toThrow();
+    });
+
+    it("continues removing remaining plugins when one throws an error", () => {
+      const error = new ConfigNotFoundError("/path/to/config.json");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(ClaudeCodeToolbox.prototype.removeGlobalPluginBinding)
+        .mockImplementationOnce(() => {
+          throw error;
+        })
+        .mockImplementationOnce(() => {});
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "failing@owner", "working@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(consoleSpy).toHaveBeenCalledWith(error.message);
+      expect(mockToolbox.removeGlobalPluginBinding).toHaveBeenCalledWith(
+        "working@owner",
+        "/Users/test/my-project",
+      );
+      expect(mockToolbox.removeLocalPlugin).toHaveBeenCalledWith(
+        "working@owner",
+      );
+    });
+
+    it("accepts the remove command with flags", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "--scope", "local", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.removeGlobalPluginBinding).toHaveBeenCalledWith(
+        "my-plugin@owner",
+        "/Users/test/my-project",
+      );
+      expect(mockToolbox.removeLocalPlugin).toHaveBeenCalledWith(
+        "my-plugin@owner",
+      );
+    });
   });
 });

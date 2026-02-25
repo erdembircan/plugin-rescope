@@ -130,9 +130,7 @@ export class ClaudeCodeToolbox {
     const config = this.readGlobalConfig();
     const plugins = config.plugins ?? {};
     const existing = plugins[pluginName] ?? [];
-    plugins[pluginName] = existing.filter(
-      (b) => b.projectPath !== projectPath,
-    );
+    plugins[pluginName] = existing.filter((b) => b.projectPath !== projectPath);
     config.plugins = plugins;
     this.updateGlobalConfig(config);
   }
