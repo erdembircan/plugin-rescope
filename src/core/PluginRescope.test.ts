@@ -150,5 +150,22 @@ describe("PluginRescope", () => {
         rescope.rescope(["--scope", "local", "my-plugin@owner"]),
       ).not.toThrow();
     });
+
+    it("reflects the error message to the user when a utility class fails", () => {
+      const error = new ConfigNotFoundError("/path/to/config.json");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockImplementation(() => {
+        throw error;
+      });
+
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["--scope", "local", "my-plugin@owner"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(error.message);
+    });
   });
 });
