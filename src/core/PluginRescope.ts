@@ -23,10 +23,10 @@ export class PluginRescope {
    * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
    */
   rescope(args: string[]): void {
-    const flagParser = new FlagParser<"scope", "add" | "remove">(
-      ["scope"],
-      { commands: ["add", "remove"], default: "add" },
-    );
+    const flagParser = new FlagParser<"scope", "add" | "remove">(["scope"], {
+      commands: ["add", "remove"],
+      default: "add",
+    });
     const { command, flags, positionals: pluginNames } = flagParser.parse(args);
     const scope = flags.scope;
 
