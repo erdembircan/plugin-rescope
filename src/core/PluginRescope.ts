@@ -62,7 +62,7 @@ export class PluginRescope {
     const version = toolbox.validateInstallation();
 
     if (version === false) {
-      console.log("Claude is not installed.\n\n" + getHelpText());
+      console.log("Claude is not installed.");
       return;
     }
 

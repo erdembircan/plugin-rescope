@@ -52,25 +52,10 @@ export class FlagParser<
     commandConfig?: CommandConfig<C>,
     booleanFlags?: B[],
   ) {
-    this.valueFlags = flags.map((flag) => {
-      let normalized = flag.trim().replaceAll(" ", "");
-
-      if (normalized.startsWith("--")) {
-        normalized = normalized.slice(2);
-      }
-
-      return normalized as T;
-    });
-
-    this.booleanFlags = (booleanFlags ?? []).map((flag) => {
-      let normalized = flag.trim().replaceAll(" ", "");
-
-      if (normalized.startsWith("--")) {
-        normalized = normalized.slice(2);
-      }
-
-      return normalized as B;
-    });
+    this.valueFlags = flags.map((f) => this.normalizeFlag(f) as T);
+    this.booleanFlags = (booleanFlags ?? []).map(
+      (f) => this.normalizeFlag(f) as B,
+    );
 
     if (commandConfig) {
       this.commands = new Set(commandConfig.commands);
@@ -79,6 +64,20 @@ export class FlagParser<
       this.commands = new Set();
       this.defaultCommand = "" as C | "";
     }
+  }
+
+  /**
+   * Strips the `--` prefix, trims whitespace, and removes internal spaces
+   * from a flag name.
+   */
+  private normalizeFlag(flag: string): string {
+    let normalized = flag.trim().replaceAll(" ", "");
+
+    if (normalized.startsWith("--")) {
+      normalized = normalized.slice(2);
+    }
+
+    return normalized;
   }
 
   /**
@@ -130,19 +129,22 @@ export class FlagParser<
     while (i < args.length) {
       const arg = args[i];
       const matchedValueFlag = this.valueFlags.find((f) => `--${f}` === arg);
-      const matchedBooleanFlag = this.booleanFlags.find(
-        (f) => `--${f}` === arg,
-      );
 
       if (matchedValueFlag !== undefined) {
         (flags as Record<T, string>)[matchedValueFlag] = args[i + 1] ?? "";
         i += 2;
-      } else if (matchedBooleanFlag !== undefined) {
-        (flags as Record<B, boolean>)[matchedBooleanFlag] = true;
-        i++;
       } else {
-        positionals.push(arg);
-        i++;
+        const matchedBooleanFlag = this.booleanFlags.find(
+          (f) => `--${f}` === arg,
+        );
+
+        if (matchedBooleanFlag !== undefined) {
+          (flags as Record<B, boolean>)[matchedBooleanFlag] = true;
+          i++;
+        } else {
+          positionals.push(arg);
+          i++;
+        }
       }
     }
 

@@ -583,7 +583,7 @@ describe("PluginRescope", () => {
       expect(consoleSpy).toHaveBeenCalledWith(getHelpText());
     });
 
-    it("includes help text when Claude is not installed", () => {
+    it("does not include help text when Claude is not installed", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue(false);
@@ -591,12 +591,7 @@ describe("PluginRescope", () => {
       const rescope = new PluginRescope("/Users/test/project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Claude is not installed."),
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(getHelpText()),
-      );
+      expect(consoleSpy).toHaveBeenCalledWith("Claude is not installed.");
     });
   });
 });
