@@ -118,7 +118,10 @@ describe("FlagParser", () => {
 
   describe("command extraction", () => {
     it("extracts a matching command from the first argument", () => {
-      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "add",
+      });
       const result = parser.parse(["add", "--scope", "local", "my-plugin"]);
 
       expect(result.command).toBe("add");
@@ -127,15 +130,21 @@ describe("FlagParser", () => {
     });
 
     it("extracts the remove command from the first argument", () => {
-      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "add",
+      });
       const result = parser.parse(["remove", "my-plugin"]);
 
       expect(result.command).toBe("remove");
       expect(result.positionals).toEqual(["my-plugin"]);
     });
 
-    it("defaults to the first command when the first argument is not a command", () => {
-      const parser = new FlagParser(["scope"], ["add", "remove"]);
+    it("falls back to the configured default when the first argument is not a command", () => {
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "add",
+      });
       const result = parser.parse(["--scope", "local", "my-plugin"]);
 
       expect(result.command).toBe("add");
@@ -144,15 +153,21 @@ describe("FlagParser", () => {
     });
 
     it("does not consume a non-command first argument as a command", () => {
-      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "add",
+      });
       const result = parser.parse(["my-plugin"]);
 
       expect(result.command).toBe("add");
       expect(result.positionals).toEqual(["my-plugin"]);
     });
 
-    it("defaults to the first command when args is empty", () => {
-      const parser = new FlagParser(["scope"], ["add", "remove"]);
+    it("falls back to the configured default when args is empty", () => {
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "add",
+      });
       const result = parser.parse([]);
 
       expect(result.command).toBe("add");
@@ -160,7 +175,10 @@ describe("FlagParser", () => {
     });
 
     it("returns the command with no positionals when only a command is given", () => {
-      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "add",
+      });
       const result = parser.parse(["remove"]);
 
       expect(result.command).toBe("remove");
@@ -168,7 +186,10 @@ describe("FlagParser", () => {
     });
 
     it("extracts command alongside flags and multiple positionals", () => {
-      const parser = new FlagParser(["scope"], ["add", "remove"]);
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "add",
+      });
       const result = parser.parse([
         "add",
         "--scope",
@@ -180,6 +201,17 @@ describe("FlagParser", () => {
       expect(result.command).toBe("add");
       expect(result.flags["scope"]).toBe("local");
       expect(result.positionals).toEqual(["plugin-a", "plugin-b"]);
+    });
+
+    it("uses a non-first command as the default when configured", () => {
+      const parser = new FlagParser(["scope"], {
+        commands: ["add", "remove"],
+        default: "remove",
+      });
+      const result = parser.parse(["my-plugin"]);
+
+      expect(result.command).toBe("remove");
+      expect(result.positionals).toEqual(["my-plugin"]);
     });
   });
 });

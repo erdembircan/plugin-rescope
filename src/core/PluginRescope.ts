@@ -25,7 +25,7 @@ export class PluginRescope {
   rescope(args: string[]): void {
     const flagParser = new FlagParser<"scope", "add" | "remove">(
       ["scope"],
-      ["add", "remove"],
+      { commands: ["add", "remove"], default: "add" },
     );
     const { command, flags, positionals: pluginNames } = flagParser.parse(args);
     const scope = flags.scope;

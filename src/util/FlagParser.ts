@@ -1,4 +1,16 @@
 /**
+ * Configuration object for command support in FlagParser.
+ *
+ * @template C - Union of valid command name literals.
+ */
+export interface CommandConfig<C extends string> {
+  /** The set of valid command names the parser should recognize. */
+  commands: C[];
+  /** The command to use when `args[0]` does not match any known command. */
+  default: C;
+}
+
+/**
  * Instance-based generic flag parser for CLI arguments.
  * Accepts flag definitions at construction and parses argument arrays into
  * typed flag/positional pairs. Optionally recognizes a leading command
@@ -15,12 +27,12 @@ export class FlagParser<T extends string, C extends string = never> {
    * trimmed, and internal spaces are removed.
    *
    * @param flags - Flag names (e.g. `["scope", "output"]`).
-   * @param commands - Optional array of valid command names. When provided,
-   *   the parser checks whether `args[0]` matches one of these commands.
-   *   If it does, the command is consumed and returned in the result;
-   *   otherwise the first entry in `commands` is used as the default.
+   * @param commandConfig - Optional command configuration object. When
+   *   provided, the parser checks whether `args[0]` matches one of the
+   *   configured commands. If it does, the command is consumed and returned
+   *   in the result; otherwise `commandConfig.default` is used.
    */
-  constructor(flags: T[], commands?: C[]) {
+  constructor(flags: T[], commandConfig?: CommandConfig<C>) {
     this.flags = flags.map((flag) => {
       let normalized = flag.trim().replaceAll(" ", "");
 
@@ -31,9 +43,9 @@ export class FlagParser<T extends string, C extends string = never> {
       return normalized as T;
     });
 
-    if (commands && commands.length > 0) {
-      this.commands = new Set(commands);
-      this.defaultCommand = commands[0];
+    if (commandConfig) {
+      this.commands = new Set(commandConfig.commands);
+      this.defaultCommand = commandConfig.default;
     } else {
       this.commands = new Set();
       this.defaultCommand = "" as C | "";
@@ -42,9 +54,10 @@ export class FlagParser<T extends string, C extends string = never> {
 
   /**
    * Parses CLI arguments into an optional command, named flags, and
-   * positional arguments. If commands were configured, the first argument
-   * is checked against them; a matching command is consumed and returned,
-   * otherwise the default command is used.
+   * positional arguments. If a command configuration was provided, the
+   * first argument is checked against the known commands; a matching
+   * command is consumed and returned, otherwise the configured default
+   * command is used.
    *
    * Matches `--`-prefixed tokens in `args` against the flag names
    * provided to the constructor.
