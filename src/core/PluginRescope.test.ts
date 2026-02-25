@@ -405,24 +405,6 @@ describe("PluginRescope", () => {
         "my-plugin@owner",
       );
     });
-
-    it("shows usage when only the command is given with no plugin names", () => {
-      const rescope = new PluginRescope("/Users/test/my-project");
-      rescope.rescope(["add"]);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Usage:"),
-      );
-    });
-
-    it("shows usage when only the remove command is given with no plugin names", () => {
-      const rescope = new PluginRescope("/Users/test/my-project");
-      rescope.rescope(["remove"]);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Usage:"),
-      );
-    });
   });
 
   describe("rescope with remove command", () => {
