@@ -29,11 +29,11 @@ export class PluginRescope {
    * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
    */
   rescope(args: string[]): void {
-    const flagParser = new FlagParser<"scope">(["scope"]);
-    const { flags, positionals } = flagParser.parse(args);
-    const scope = flags.scope;
+    const { command, remainingArgs } = this.extractCommand(args);
 
-    const { command, pluginNames } = this.extractCommand(positionals);
+    const flagParser = new FlagParser<"scope">(["scope"]);
+    const { flags, positionals: pluginNames } = flagParser.parse(remainingArgs);
+    const scope = flags.scope;
 
     if (pluginNames.length === 0) {
       console.log(
@@ -79,21 +79,23 @@ export class PluginRescope {
   }
 
   /**
-   * Extracts the command from the positionals array. If the first positional
-   * is a known command name, it is consumed; otherwise defaults to `"add"`.
+   * Extracts the command from the raw args array. The command must be the
+   * first argument (immediately after the CLI name). If the first argument
+   * is a known command name it is consumed; otherwise defaults to `"add"`
+   * and the full args array is returned unchanged.
    */
-  private extractCommand(positionals: string[]): {
+  private extractCommand(args: string[]): {
     command: Command;
-    pluginNames: string[];
+    remainingArgs: string[];
   } {
-    if (positionals.length > 0 && COMMANDS.has(positionals[0])) {
+    if (args.length > 0 && COMMANDS.has(args[0])) {
       return {
-        command: positionals[0] as Command,
-        pluginNames: positionals.slice(1),
+        command: args[0] as Command,
+        remainingArgs: args.slice(1),
       };
     }
 
-    return { command: "add", pluginNames: positionals };
+    return { command: "add", remainingArgs: args };
   }
 
   /**
