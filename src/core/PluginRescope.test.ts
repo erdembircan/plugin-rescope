@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginRescope } from "#core/PluginRescope.js";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
+import { getHelpText } from "#util/get-help-text.js";
 
 vi.mock("#core/ClaudeCodeToolbox.js");
 vi.mock("#util/JsonConfig.js");
@@ -536,6 +537,61 @@ describe("PluginRescope", () => {
       expect(mockToolbox.removeLocalPlugin).toHaveBeenCalledWith(
         "my-plugin@owner",
       );
+    });
+  });
+
+  describe("--help flag", () => {
+    it("prints help text and returns when --help is passed alone", () => {
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["--help"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(getHelpText());
+    });
+
+    it("prints help text when --help is passed with other arguments", () => {
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["add", "--help", "my-plugin@owner"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(getHelpText());
+    });
+
+    it("does not create a ClaudeCodeToolbox when --help is passed", () => {
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["--help"]);
+
+      expect(ClaudeCodeToolbox).not.toHaveBeenCalled();
+    });
+
+    it("prints help text when no plugin names are provided", () => {
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope([]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(getHelpText());
+    });
+
+    it("prints help text when only flags are provided without plugins", () => {
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["--scope", "local"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(getHelpText());
+    });
+
+    it("prints help text when only a command is provided without plugins", () => {
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["add"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(getHelpText());
+    });
+
+    it("does not include help text when Claude is not installed", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue(false);
+
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["--scope", "local", "my-plugin@owner"]);
+
+      expect(consoleSpy).toHaveBeenCalledWith("Claude is not installed.");
     });
   });
 });

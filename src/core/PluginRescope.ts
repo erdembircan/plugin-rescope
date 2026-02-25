@@ -2,6 +2,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { FlagParser } from "#util/FlagParser.js";
+import { getHelpText } from "#util/get-help-text.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 
 /**
@@ -23,17 +24,25 @@ export class PluginRescope {
    * @param args - Raw CLI argument array (e.g. `process.argv.slice(2)`).
    */
   rescope(args: string[]): void {
-    const flagParser = new FlagParser<"scope", "add" | "remove">(["scope"], {
-      commands: ["add", "remove"],
-      default: "add",
-    });
+    const flagParser = new FlagParser<"scope", "add" | "remove", "help">(
+      ["scope"],
+      {
+        commands: ["add", "remove"],
+        default: "add",
+      },
+      ["help"],
+    );
     const { command, flags, positionals: pluginNames } = flagParser.parse(args);
+
+    if (flags.help) {
+      console.log(getHelpText());
+      return;
+    }
+
     const scope = flags.scope;
 
     if (pluginNames.length === 0) {
-      console.log(
-        "Usage: plugin-rescope [add|remove] [--scope <scope>] <plugin> [<plugin> ...]",
-      );
+      console.log(getHelpText());
       return;
     }
 
