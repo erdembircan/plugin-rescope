@@ -294,4 +294,193 @@ describe("ClaudeCodeToolbox", () => {
       );
     });
   });
+
+  describe("removeGlobalPluginBinding", () => {
+    it("removes bindings matching the given project path", () => {
+      const keepBinding = {
+        scope: "local",
+        installPath: "/path/to/plugin",
+        version: "1.0.0",
+        installedAt: "2026-02-24T12:00:00.000Z",
+        lastUpdated: "2026-02-24T12:00:00.000Z",
+        gitCommitSha: "abc123",
+        projectPath: "/Users/test/project-a",
+      };
+      const removeBinding = {
+        scope: "local",
+        installPath: "/path/to/plugin",
+        version: "1.0.0",
+        installedAt: "2026-02-24T13:00:00.000Z",
+        lastUpdated: "2026-02-24T13:00:00.000Z",
+        gitCommitSha: "abc123",
+        projectPath: "/Users/test/project-b",
+      };
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({
+        plugins: {
+          "my-plugin@owner": [keepBinding, removeBinding],
+        },
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.removeGlobalPluginBinding(
+        "my-plugin@owner",
+        "/Users/test/project-b",
+      );
+
+      expect(mockGlobalConfig.update).toHaveBeenCalledWith({
+        plugins: {
+          "my-plugin@owner": [keepBinding],
+        },
+      });
+    });
+
+    it("leaves an empty array when all bindings are removed", () => {
+      const binding = {
+        scope: "local",
+        installPath: "/path/to/plugin",
+        version: "1.0.0",
+        installedAt: "2026-02-24T12:00:00.000Z",
+        lastUpdated: "2026-02-24T12:00:00.000Z",
+        gitCommitSha: "abc123",
+        projectPath: "/Users/test/project",
+      };
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({
+        plugins: {
+          "my-plugin@owner": [binding],
+        },
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.removeGlobalPluginBinding(
+        "my-plugin@owner",
+        "/Users/test/project",
+      );
+
+      expect(mockGlobalConfig.update).toHaveBeenCalledWith({
+        plugins: {
+          "my-plugin@owner": [],
+        },
+      });
+    });
+
+    it("writes unchanged config when plugin has no matching bindings", () => {
+      const binding = {
+        scope: "local",
+        installPath: "/path/to/plugin",
+        version: "1.0.0",
+        installedAt: "2026-02-24T12:00:00.000Z",
+        lastUpdated: "2026-02-24T12:00:00.000Z",
+        gitCommitSha: "abc123",
+        projectPath: "/Users/test/project-a",
+      };
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({
+        plugins: {
+          "my-plugin@owner": [binding],
+        },
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.removeGlobalPluginBinding(
+        "my-plugin@owner",
+        "/Users/test/other-project",
+      );
+
+      expect(mockGlobalConfig.update).toHaveBeenCalledWith({
+        plugins: {
+          "my-plugin@owner": [binding],
+        },
+      });
+    });
+
+    it("handles missing plugins field gracefully", () => {
+      vi.mocked(mockGlobalConfig.read).mockReturnValue({});
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.removeGlobalPluginBinding(
+        "my-plugin@owner",
+        "/Users/test/project",
+      );
+
+      expect(mockGlobalConfig.update).toHaveBeenCalledWith({
+        plugins: {
+          "my-plugin@owner": [],
+        },
+      });
+    });
+
+    it("propagates ConfigNotFoundError when config file is missing", () => {
+      vi.mocked(mockGlobalConfig.read).mockImplementation(() => {
+        throw new ConfigNotFoundError(
+          "~/.claude/plugins/installed_plugins.json",
+        );
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      expect(() =>
+        toolbox.removeGlobalPluginBinding(
+          "my-plugin@owner",
+          "/Users/test/project",
+        ),
+      ).toThrow(ConfigNotFoundError);
+    });
+  });
+
+  describe("removeLocalPlugin", () => {
+    it("removes a plugin from the enabled plugins map", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({
+        enabledPlugins: {
+          "keep-plugin@owner": true,
+          "remove-plugin@owner": true,
+        },
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.removeLocalPlugin("remove-plugin@owner");
+
+      expect(mockLocalConfig.update).toHaveBeenCalledWith({
+        enabledPlugins: {
+          "keep-plugin@owner": true,
+        },
+      });
+    });
+
+    it("writes config unchanged when plugin is not in enabled plugins", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({
+        enabledPlugins: {
+          "existing-plugin@owner": true,
+        },
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.removeLocalPlugin("nonexistent@owner");
+
+      expect(mockLocalConfig.update).toHaveBeenCalledWith({
+        enabledPlugins: {
+          "existing-plugin@owner": true,
+        },
+      });
+    });
+
+    it("handles missing enabledPlugins field gracefully", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({});
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      toolbox.removeLocalPlugin("any-plugin@owner");
+
+      expect(mockLocalConfig.update).toHaveBeenCalledWith({
+        enabledPlugins: {},
+      });
+    });
+
+    it("propagates ConfigNotFoundError when local config file is missing", () => {
+      vi.mocked(mockLocalConfig.read).mockImplementation(() => {
+        throw new ConfigNotFoundError(".claude/settings.local.json");
+      });
+      const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
+
+      expect(() => toolbox.removeLocalPlugin("any-plugin@owner")).toThrow(
+        ConfigNotFoundError,
+      );
+    });
+  });
 });
