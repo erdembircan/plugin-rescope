@@ -45,6 +45,9 @@ describe("PluginRescope", () => {
           projectPath: "/Users/test/other-project",
         },
       ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
@@ -91,6 +94,9 @@ describe("PluginRescope", () => {
           projectPath: "/Users/test/second",
         },
       ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
 
       const rescope = new PluginRescope("/Users/test/new-project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
@@ -133,6 +139,65 @@ describe("PluginRescope", () => {
 
       const mockToolbox = getToolboxInstance();
       expect(mockToolbox.getGlobalPluginConfig).not.toHaveBeenCalled();
+    });
+
+    it("skips global binding when plugin+scope+project already exists", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "local", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
+      expect(mockToolbox.addLocalPlugin).toHaveBeenCalledWith(
+        "my-plugin@owner",
+      );
+    });
+
+    it("skips local plugin when it is already enabled", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue({
+        "my-plugin@owner": true,
+      });
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "local", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
     });
 
     it("does not throw when a utility class raises an error", () => {

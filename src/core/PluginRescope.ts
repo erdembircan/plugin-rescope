@@ -58,17 +58,34 @@ export class PluginRescope {
       }
 
       const source = bindings[0];
-      const now = new Date().toISOString();
+      const targetScope = scope || source.scope;
 
-      toolbox.addGlobalPluginBinding(pluginName, {
-        scope: scope || source.scope,
-        installPath: source.installPath,
-        version: source.version,
-        installedAt: source.installedAt,
-        lastUpdated: now,
-        gitCommitSha: source.gitCommitSha,
-        projectPath: this.projectPath,
-      });
+      const alreadyBound = bindings.some(
+        (b) => b.scope === targetScope && b.projectPath === this.projectPath,
+      );
+
+      if (!alreadyBound) {
+        const now = new Date().toISOString();
+
+        toolbox.addGlobalPluginBinding(pluginName, {
+          scope: targetScope,
+          installPath: source.installPath,
+          version: source.version,
+          installedAt: source.installedAt,
+          lastUpdated: now,
+          gitCommitSha: source.gitCommitSha,
+          projectPath: this.projectPath,
+        });
+      }
+
+      const enabledPlugins = toolbox.getEnabledPlugins();
+
+      if (enabledPlugins[pluginName]) {
+        console.log(
+          `Plugin "${pluginName}" is already configured for this project. If it is not working, the issue may be outside the scope of this package.`,
+        );
+        return;
+      }
 
       toolbox.addLocalPlugin(pluginName);
 
