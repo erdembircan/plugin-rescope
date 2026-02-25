@@ -26,23 +26,23 @@ export class FlagParser<T extends string> {
   }
 
   /**
-   * Parses CLI arguments into named flags and a positional argument.
+   * Parses CLI arguments into named flags and positional arguments.
    * Matches `--`-prefixed tokens in `args` against the flag names
    * provided to the constructor.
    *
    * @param args - The raw CLI argument array (e.g. `process.argv.slice(2)`).
    * @returns An object with `flags` (a record mapping each flag name to its
-   *          value, or `""` if not provided) and `positional` (the first
-   *          non-flag argument, or `""` if none).
+   *          value, or `""` if not provided) and `positionals` (an array of
+   *          all non-flag arguments, in order).
    */
-  parse(args: string[]): { flags: Record<T, string>; positional: string } {
+  parse(args: string[]): { flags: Record<T, string>; positionals: string[] } {
     const result = {} as Record<T, string>;
 
     for (const flag of this.flags) {
       result[flag] = "";
     }
 
-    let positional = "";
+    const positionals: string[] = [];
     let i = 0;
 
     while (i < args.length) {
@@ -53,11 +53,11 @@ export class FlagParser<T extends string> {
         result[matchedFlag] = args[i + 1] ?? "";
         i += 2;
       } else {
-        positional = arg;
+        positionals.push(arg);
         i++;
       }
     }
 
-    return { flags: result, positional };
+    return { flags: result, positionals };
   }
 }

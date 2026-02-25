@@ -262,5 +262,111 @@ describe("PluginRescope", () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(error.message);
     });
+
+    it("rescopes multiple plugins in sequence", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "global",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/other-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "local", "plugin-a@owner", "plugin-b@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
+        "plugin-a@owner",
+        expect.objectContaining({ projectPath: "/Users/test/my-project" }),
+      );
+      expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
+        "plugin-b@owner",
+        expect.objectContaining({ projectPath: "/Users/test/my-project" }),
+      );
+      expect(mockToolbox.addLocalPlugin).toHaveBeenCalledWith("plugin-a@owner");
+      expect(mockToolbox.addLocalPlugin).toHaveBeenCalledWith("plugin-b@owner");
+    });
+
+    it("continues rescoping remaining plugins when one is not found", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig)
+        .mockReturnValueOnce([])
+        .mockReturnValueOnce([
+          {
+            scope: "global",
+            installPath: "/path/to/plugin",
+            version: "1.0.0",
+            installedAt: "2026-02-24T12:00:00.000Z",
+            lastUpdated: "2026-02-24T12:00:00.000Z",
+            gitCommitSha: "abc123",
+            projectPath: "/Users/test/other-project",
+          },
+        ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "local", "missing@owner", "found@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Plugin "missing@owner" not found in global config. No workaround needed.',
+      );
+      expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
+        "found@owner",
+        expect.objectContaining({ projectPath: "/Users/test/my-project" }),
+      );
+    });
+
+    it("continues rescoping remaining plugins when one throws an error", () => {
+      const error = new ConfigNotFoundError("/path/to/config.json");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig)
+        .mockImplementationOnce(() => {
+          throw error;
+        })
+        .mockReturnValueOnce([
+          {
+            scope: "global",
+            installPath: "/path/to/plugin",
+            version: "1.0.0",
+            installedAt: "2026-02-24T12:00:00.000Z",
+            lastUpdated: "2026-02-24T12:00:00.000Z",
+            gitCommitSha: "abc123",
+            projectPath: "/Users/test/other-project",
+          },
+        ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "local", "failing@owner", "working@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(consoleSpy).toHaveBeenCalledWith(error.message);
+      expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
+        "working@owner",
+        expect.objectContaining({ projectPath: "/Users/test/my-project" }),
+      );
+    });
   });
 });

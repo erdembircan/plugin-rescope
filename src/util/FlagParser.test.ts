@@ -18,18 +18,18 @@ describe("FlagParser", () => {
     expect(result.flags["output"]).toBe("");
   });
 
-  it("extracts the positional argument", () => {
+  it("extracts a single positional argument", () => {
     const parser = new FlagParser(["scope"]);
     const result = parser.parse(["my-plugin"]);
 
-    expect(result.positional).toBe("my-plugin");
+    expect(result.positionals).toEqual(["my-plugin"]);
   });
 
-  it("defaults positional to empty string when not provided", () => {
+  it("returns empty array when no positionals are provided", () => {
     const parser = new FlagParser(["scope"]);
     const result = parser.parse(["--scope", "local"]);
 
-    expect(result.positional).toBe("");
+    expect(result.positionals).toEqual([]);
   });
 
   it("parses a mix of flags and positional argument", () => {
@@ -37,7 +37,7 @@ describe("FlagParser", () => {
     const result = parser.parse(["--scope", "local", "my-plugin"]);
 
     expect(result.flags["scope"]).toBe("local");
-    expect(result.positional).toBe("my-plugin");
+    expect(result.positionals).toEqual(["my-plugin"]);
   });
 
   it("handles positional argument before flags", () => {
@@ -45,7 +45,7 @@ describe("FlagParser", () => {
     const result = parser.parse(["my-plugin", "--scope", "local"]);
 
     expect(result.flags["scope"]).toBe("local");
-    expect(result.positional).toBe("my-plugin");
+    expect(result.positionals).toEqual(["my-plugin"]);
   });
 
   it("returns all empty values when args is empty", () => {
@@ -54,7 +54,7 @@ describe("FlagParser", () => {
 
     expect(result.flags["scope"]).toBe("");
     expect(result.flags["output"]).toBe("");
-    expect(result.positional).toBe("");
+    expect(result.positionals).toEqual([]);
   });
 
   it("auto-corrects flag names that include the -- prefix", () => {
@@ -76,5 +76,36 @@ describe("FlagParser", () => {
     const result = parser.parse(["--myflag", "value"]);
 
     expect(result.flags["myflag"]).toBe("value");
+  });
+
+  it("collects multiple positional arguments in order", () => {
+    const parser = new FlagParser(["scope"]);
+    const result = parser.parse([
+      "--scope",
+      "local",
+      "plugin-a",
+      "plugin-b",
+      "plugin-c",
+    ]);
+
+    expect(result.flags["scope"]).toBe("local");
+    expect(result.positionals).toEqual(["plugin-a", "plugin-b", "plugin-c"]);
+  });
+
+  it("collects positionals interspersed with flags", () => {
+    const parser = new FlagParser(["scope", "output"]);
+    const result = parser.parse([
+      "plugin-a",
+      "--scope",
+      "local",
+      "plugin-b",
+      "--output",
+      "dist",
+      "plugin-c",
+    ]);
+
+    expect(result.flags["scope"]).toBe("local");
+    expect(result.flags["output"]).toBe("dist");
+    expect(result.positionals).toEqual(["plugin-a", "plugin-b", "plugin-c"]);
   });
 });
