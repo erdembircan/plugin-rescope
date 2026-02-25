@@ -32,14 +32,9 @@ export class PluginRescope {
       },
       ["help"],
     );
-    const {
-      command,
-      flags,
-      booleanFlags,
-      positionals: pluginNames,
-    } = flagParser.parse(args);
+    const { command, flags, positionals: pluginNames } = flagParser.parse(args);
 
-    if (booleanFlags.help) {
+    if (flags.help) {
       console.log(getHelpText());
       return;
     }

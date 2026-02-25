@@ -19,13 +19,16 @@ export interface CommandConfig<C extends string> {
  * Supports two kinds of flags:
  * - **Value flags** consume the next argument as their value (e.g. `--scope local`).
  * - **Boolean flags** are standalone toggles with no value (e.g. `--help`).
+ *
+ * Both kinds are returned in a single `flags` record: value flags map to
+ * `string`, boolean flags map to `boolean`.
  */
 export class FlagParser<
   T extends string,
   C extends string = never,
   B extends string = never,
 > {
-  private flags: T[];
+  private valueFlags: T[];
   private booleanFlags: B[];
   private commands: ReadonlySet<C>;
   private defaultCommand: C | "";
@@ -49,7 +52,7 @@ export class FlagParser<
     commandConfig?: CommandConfig<C>,
     booleanFlags?: B[],
   ) {
-    this.flags = flags.map((flag) => {
+    this.valueFlags = flags.map((flag) => {
       let normalized = flag.trim().replaceAll(" ", "");
 
       if (normalized.startsWith("--")) {
@@ -79,27 +82,26 @@ export class FlagParser<
   }
 
   /**
-   * Parses CLI arguments into an optional command, named flags, boolean
-   * flags, and positional arguments. If a command configuration was
-   * provided, the first argument is checked against the known commands;
-   * a matching command is consumed and returned, otherwise the configured
-   * default command is used.
+   * Parses CLI arguments into an optional command, a unified flags record,
+   * and positional arguments. If a command configuration was provided, the
+   * first argument is checked against the known commands; a matching
+   * command is consumed and returned, otherwise the configured default
+   * command is used.
    *
    * Matches `--`-prefixed tokens in `args` against the flag names
    * provided to the constructor.
    *
    * @param args - The raw CLI argument array (e.g. `process.argv.slice(2)`).
    * @returns An object with `command` (the matched or default command, or
-   *          `""` when no commands were configured), `flags` (a record mapping
-   *          each value flag name to its value, or `""` if not provided),
-   *          `booleanFlags` (a record mapping each boolean flag name to
-   *          `true` or `false`), and `positionals` (an array of all non-flag
-   *          arguments, in order).
+   *          `""` when no commands were configured), `flags` (a record
+   *          mapping value flag names to their `string` value or `""` if
+   *          not provided, and boolean flag names to `true` or `false`),
+   *          and `positionals` (an array of all non-flag arguments, in
+   *          order).
    */
   parse(args: string[]): {
     command: C | "";
-    flags: Record<T, string>;
-    booleanFlags: Record<B, boolean>;
+    flags: Record<T, string> & Record<B, boolean>;
     positionals: string[];
   } {
     let command: C | "" = this.defaultCommand;
@@ -112,16 +114,14 @@ export class FlagParser<
       }
     }
 
-    const result = {} as Record<T, string>;
+    const flags = {} as Record<T, string> & Record<B, boolean>;
 
-    for (const flag of this.flags) {
-      result[flag] = "";
+    for (const flag of this.valueFlags) {
+      (flags as Record<T, string>)[flag] = "";
     }
 
-    const booleanResult = {} as Record<B, boolean>;
-
     for (const flag of this.booleanFlags) {
-      booleanResult[flag] = false;
+      (flags as Record<B, boolean>)[flag] = false;
     }
 
     const positionals: string[] = [];
@@ -129,16 +129,16 @@ export class FlagParser<
 
     while (i < args.length) {
       const arg = args[i];
-      const matchedFlag = this.flags.find((f) => `--${f}` === arg);
+      const matchedValueFlag = this.valueFlags.find((f) => `--${f}` === arg);
       const matchedBooleanFlag = this.booleanFlags.find(
         (f) => `--${f}` === arg,
       );
 
-      if (matchedFlag !== undefined) {
-        result[matchedFlag] = args[i + 1] ?? "";
+      if (matchedValueFlag !== undefined) {
+        (flags as Record<T, string>)[matchedValueFlag] = args[i + 1] ?? "";
         i += 2;
       } else if (matchedBooleanFlag !== undefined) {
-        booleanResult[matchedBooleanFlag] = true;
+        (flags as Record<B, boolean>)[matchedBooleanFlag] = true;
         i++;
       } else {
         positionals.push(arg);
@@ -146,6 +146,6 @@ export class FlagParser<
       }
     }
 
-    return { command, flags: result, booleanFlags: booleanResult, positionals };
+    return { command, flags, positionals };
   }
 }

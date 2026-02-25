@@ -220,21 +220,21 @@ describe("FlagParser", () => {
       const parser = new FlagParser(["scope"], undefined, ["help"]);
       const result = parser.parse(["--scope", "local"]);
 
-      expect(result.booleanFlags["help"]).toBe(false);
+      expect(result.flags["help"]).toBe(false);
     });
 
     it("sets a boolean flag to true when present", () => {
       const parser = new FlagParser(["scope"], undefined, ["help"]);
       const result = parser.parse(["--help"]);
 
-      expect(result.booleanFlags["help"]).toBe(true);
+      expect(result.flags["help"]).toBe(true);
     });
 
     it("does not consume the next argument as a value for boolean flags", () => {
       const parser = new FlagParser(["scope"], undefined, ["help"]);
       const result = parser.parse(["--help", "my-plugin"]);
 
-      expect(result.booleanFlags["help"]).toBe(true);
+      expect(result.flags["help"]).toBe(true);
       expect(result.positionals).toEqual(["my-plugin"]);
     });
 
@@ -248,8 +248,8 @@ describe("FlagParser", () => {
       ]);
 
       expect(result.flags["scope"]).toBe("local");
-      expect(result.booleanFlags["verbose"]).toBe(true);
-      expect(result.booleanFlags["help"]).toBe(false);
+      expect(result.flags["verbose"]).toBe(true);
+      expect(result.flags["help"]).toBe(false);
       expect(result.positionals).toEqual(["my-plugin"]);
     });
 
@@ -262,7 +262,7 @@ describe("FlagParser", () => {
       const result = parser.parse(["add", "--help"]);
 
       expect(result.command).toBe("add");
-      expect(result.booleanFlags["help"]).toBe(true);
+      expect(result.flags["help"]).toBe(true);
     });
 
     it("normalizes boolean flag names by stripping -- prefix", () => {
@@ -273,7 +273,7 @@ describe("FlagParser", () => {
       );
       const result = parser.parse(["--help"]);
 
-      expect(result.booleanFlags["help"]).toBe(true);
+      expect(result.flags["help"]).toBe(true);
     });
 
     it("trims whitespace from boolean flag names", () => {
@@ -284,23 +284,23 @@ describe("FlagParser", () => {
       );
       const result = parser.parse(["--help"]);
 
-      expect(result.booleanFlags["help"]).toBe(true);
+      expect(result.flags["help"]).toBe(true);
     });
 
-    it("returns empty booleanFlags record when none are configured", () => {
+    it("includes boolean flags in the flags record when none are configured", () => {
       const parser = new FlagParser(["scope"]);
       const result = parser.parse(["--scope", "local"]);
 
-      expect(result.booleanFlags).toEqual({});
+      expect(result.flags["scope"]).toBe("local");
     });
 
     it("handles multiple boolean flags", () => {
       const parser = new FlagParser([], undefined, ["help", "verbose", "dry"]);
       const result = parser.parse(["--help", "--dry"]);
 
-      expect(result.booleanFlags["help"]).toBe(true);
-      expect(result.booleanFlags["verbose"]).toBe(false);
-      expect(result.booleanFlags["dry"]).toBe(true);
+      expect(result.flags["help"]).toBe(true);
+      expect(result.flags["verbose"]).toBe(false);
+      expect(result.flags["dry"]).toBe(true);
     });
   });
 });
