@@ -11,6 +11,28 @@ export interface CommandConfig<C extends string> {
 }
 
 /**
+ * Definition object for a value flag with enum validation.
+ *
+ * @template T - The flag name literal type.
+ */
+export interface EnumFlagDefinition<T extends string> {
+  /** The flag name. */
+  name: T;
+  /** The set of allowed values for this flag. */
+  allowed: string[];
+  /** The default value when the supplied value is missing or invalid. */
+  default: string;
+}
+
+/**
+ * A value flag definition: either a plain string name or an object with
+ * enum validation configuration.
+ *
+ * @template T - The flag name literal type.
+ */
+export type FlagDefinition<T extends string> = T | EnumFlagDefinition<T>;
+
+/**
  * Instance-based generic flag parser for CLI arguments.
  * Accepts flag definitions at construction and parses argument arrays into
  * typed flag/positional pairs. Optionally recognizes a leading command
@@ -18,6 +40,8 @@ export interface CommandConfig<C extends string> {
  *
  * Supports two kinds of flags:
  * - **Value flags** consume the next argument as their value (e.g. `--scope local`).
+ *   Value flags can optionally be defined with enum validation, restricting
+ *   the accepted values to a predefined set.
  * - **Boolean flags** are standalone toggles with no value (e.g. `--help`).
  *
  * Both kinds are returned in a single `flags` record: value flags map to
@@ -32,13 +56,19 @@ export class FlagParser<
   private booleanFlags: B[];
   private commands: ReadonlySet<C>;
   private defaultCommand: C | "";
+  private enumConfigs: Map<
+    T,
+    { allowed: ReadonlySet<string>; default: string }
+  >;
 
   /**
-   * Creates a FlagParser instance for the given flag names.
+   * Creates a FlagParser instance for the given flag definitions.
    * Flag names are normalized: any `--` prefix is stripped, whitespace is
    * trimmed, and internal spaces are removed.
    *
-   * @param flags - Value flag names (e.g. `["scope", "output"]`).
+   * @param flags - Value flag definitions. Each element can be a plain string
+   *   (e.g. `"output"`) or an object with `name`, `allowed`, and `default`
+   *   for enum validation (e.g. `{ name: "scope", allowed: ["local", "project"], default: "local" }`).
    * @param commandConfig - Optional command configuration object. When
    *   provided, the parser checks whether `args[0]` matches one of the
    *   configured commands. If it does, the command is consumed and returned
@@ -48,11 +78,23 @@ export class FlagParser<
    *   `true` (present) or `false` (absent).
    */
   constructor(
-    flags: T[],
+    flags: FlagDefinition<T>[],
     commandConfig?: CommandConfig<C>,
     booleanFlags?: B[],
   ) {
-    this.valueFlags = flags.map((f) => this.normalizeFlag(f) as T);
+    this.enumConfigs = new Map();
+    this.valueFlags = flags.map((f) => {
+      if (typeof f === "string") {
+        return this.normalizeFlag(f) as T;
+      }
+
+      const name = this.normalizeFlag(f.name) as T;
+      this.enumConfigs.set(name, {
+        allowed: new Set(f.allowed),
+        default: f.default,
+      });
+      return name;
+    });
     this.booleanFlags = (booleanFlags ?? []).map(
       (f) => this.normalizeFlag(f) as B,
     );
@@ -116,7 +158,8 @@ export class FlagParser<
     const flags = {} as Record<T, string> & Record<B, boolean>;
 
     for (const flag of this.valueFlags) {
-      (flags as Record<T, string>)[flag] = "";
+      const enumConfig = this.enumConfigs.get(flag);
+      (flags as Record<T, string>)[flag] = enumConfig ? enumConfig.default : "";
     }
 
     for (const flag of this.booleanFlags) {
@@ -131,7 +174,16 @@ export class FlagParser<
       const matchedValueFlag = this.valueFlags.find((f) => `--${f}` === arg);
 
       if (matchedValueFlag !== undefined) {
-        (flags as Record<T, string>)[matchedValueFlag] = args[i + 1] ?? "";
+        const raw = args[i + 1] ?? "";
+        const enumConfig = this.enumConfigs.get(matchedValueFlag);
+
+        if (enumConfig) {
+          (flags as Record<T, string>)[matchedValueFlag] =
+            enumConfig.allowed.has(raw) ? raw : enumConfig.default;
+        } else {
+          (flags as Record<T, string>)[matchedValueFlag] = raw;
+        }
+
         i += 2;
       } else {
         const matchedBooleanFlag = this.booleanFlags.find(

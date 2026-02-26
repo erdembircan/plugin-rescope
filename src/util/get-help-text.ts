@@ -12,7 +12,7 @@ export function getHelpText(): string {
     "  remove    Unregister plugin(s) from the current project",
     "",
     "Options:",
-    "  --scope <scope>  Override the plugin scope (e.g. local, global)",
+    "  --scope <scope>  Set the plugin scope: local, project (default: local)",
     "  --help           Show this help message",
     "",
     "Examples:",
