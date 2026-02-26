@@ -7,8 +7,7 @@
     "plugin-rescope": "./bin/plugin-rescope.js"
   },
   "scripts": {
-    "build": "tsc && npm run minify",
-    "minify": "terser build/index.js -o build/index.js --module --compress --mangle",
+    "build": "node esbuild.config.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "typecheck": "tsc --noEmit -p tsconfig.check.json",
@@ -40,7 +39,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "prettier": "^3.8.1",
-    "terser": "^5.46.0",
+    "esbuild": "^0.25.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18"
