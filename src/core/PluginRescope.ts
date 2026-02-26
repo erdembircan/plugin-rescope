@@ -25,7 +25,7 @@ export class PluginRescope {
    */
   rescope(args: string[]): void {
     const flagParser = new FlagParser<"scope", "add" | "remove", "help">(
-      ["scope"],
+      [{ name: "scope", allowed: ["local", "project"], default: "local" }],
       {
         commands: ["add", "remove"],
         default: "add",
@@ -101,7 +101,7 @@ export class PluginRescope {
     }
 
     const source = bindings[0];
-    const targetScope = scope || source.scope;
+    const targetScope = scope;
 
     const alreadyBound = bindings.some(
       (b) => b.scope === targetScope && b.projectPath === this.projectPath,

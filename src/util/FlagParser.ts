@@ -56,7 +56,10 @@ export class FlagParser<
   private booleanFlags: B[];
   private commands: ReadonlySet<C>;
   private defaultCommand: C | "";
-  private enumConfigs: Map<T, { allowed: ReadonlySet<string>; default: string }>;
+  private enumConfigs: Map<
+    T,
+    { allowed: ReadonlySet<string>; default: string }
+  >;
 
   /**
    * Creates a FlagParser instance for the given flag definitions.
@@ -175,9 +178,8 @@ export class FlagParser<
         const enumConfig = this.enumConfigs.get(matchedValueFlag);
 
         if (enumConfig) {
-          (flags as Record<T, string>)[matchedValueFlag] = enumConfig.allowed.has(raw)
-            ? raw
-            : enumConfig.default;
+          (flags as Record<T, string>)[matchedValueFlag] =
+            enumConfig.allowed.has(raw) ? raw : enumConfig.default;
         } else {
           (flags as Record<T, string>)[matchedValueFlag] = raw;
         }

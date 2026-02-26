@@ -365,12 +365,7 @@ describe("FlagParser", () => {
         { commands: ["add", "remove"], default: "add" },
         ["help"],
       );
-      const result = parser.parse([
-        "add",
-        "--scope",
-        "project",
-        "my-plugin",
-      ]);
+      const result = parser.parse(["add", "--scope", "project", "my-plugin"]);
 
       expect(result.command).toBe("add");
       expect(result.flags["scope"]).toBe("project");
@@ -380,7 +375,11 @@ describe("FlagParser", () => {
 
     it("normalizes the flag name in a definition object", () => {
       const parser = new FlagParser<string>([
-        { name: "  --scope  ", allowed: ["local", "project"], default: "local" },
+        {
+          name: "  --scope  ",
+          allowed: ["local", "project"],
+          default: "local",
+        },
       ]);
       const result = parser.parse(["--scope", "project"]);
 
