@@ -120,7 +120,7 @@ export class ClaudeCodeToolbox {
   /**
    * Removes bindings that match a given project path from a plugin's entry
    * in the global plugin configuration. If no bindings remain after removal,
-   * the plugin key is left as an empty array.
+   * the entire plugin key is removed from the config.
    *
    * @param pluginName - The plugin key in `name@marketplace` format.
    * @param projectPath - The project path whose bindings should be removed.
@@ -130,7 +130,14 @@ export class ClaudeCodeToolbox {
     const config = this.readGlobalConfig();
     const plugins = config.plugins ?? {};
     const existing = plugins[pluginName] ?? [];
-    plugins[pluginName] = existing.filter((b) => b.projectPath !== projectPath);
+    const remaining = existing.filter((b) => b.projectPath !== projectPath);
+
+    if (remaining.length > 0) {
+      plugins[pluginName] = remaining;
+    } else {
+      delete plugins[pluginName];
+    }
+
     config.plugins = plugins;
     this.updateGlobalConfig(config);
   }
