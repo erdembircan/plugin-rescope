@@ -409,19 +409,6 @@ describe("PluginRescope", () => {
   });
 
   describe("rescope with project scope", () => {
-    it("prints not-implemented message when scope is project", () => {
-      vi.mocked(
-        ClaudeCodeToolbox.prototype.validateInstallation,
-      ).mockReturnValue("1.0.27");
-
-      const rescope = new PluginRescope("/Users/test/my-project");
-      rescope.rescope(["--scope", "project", "my-plugin@owner"]);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Project scope is not implemented yet.",
-      );
-    });
-
     it("does not modify global or local config when scope is project", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
@@ -435,30 +422,6 @@ describe("PluginRescope", () => {
       expect(mockToolbox.getEnabledPlugins).not.toHaveBeenCalled();
       expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
       expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
-    });
-
-    it("prints not-implemented message for each plugin when scope is project", () => {
-      vi.mocked(
-        ClaudeCodeToolbox.prototype.validateInstallation,
-      ).mockReturnValue("1.0.27");
-
-      const rescope = new PluginRescope("/Users/test/my-project");
-      rescope.rescope([
-        "--scope",
-        "project",
-        "plugin-a@owner",
-        "plugin-b@owner",
-      ]);
-
-      expect(consoleSpy).toHaveBeenCalledTimes(2);
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        1,
-        "Project scope is not implemented yet.",
-      );
-      expect(consoleSpy).toHaveBeenNthCalledWith(
-        2,
-        "Project scope is not implemented yet.",
-      );
     });
   });
 
