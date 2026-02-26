@@ -52,11 +52,14 @@ export class PluginRescope {
       "plugins",
       "installed_plugins.json",
     );
-    const localConfigPath = join(".claude", "settings.local.json");
+    const settingsPath =
+      scope === "project"
+        ? join(".claude", "settings.json")
+        : join(".claude", "settings.local.json");
 
     const toolbox = new ClaudeCodeToolbox(
       new JsonConfig(globalConfigPath),
-      new JsonConfig(localConfigPath),
+      new JsonConfig(settingsPath),
     );
 
     const version = toolbox.validateInstallation();
@@ -83,28 +86,13 @@ export class PluginRescope {
   }
 
   /**
-   * Dispatches a single plugin rescope to the appropriate handler based on scope.
+   * Rescopes a single plugin at the given scope: looks it up in global config
+   * and registers it in both global and scope-specific settings if needed.
    */
   private rescopePlugin(
     toolbox: ClaudeCodeToolbox,
     pluginName: string,
     scope: string,
-  ): void {
-    if (scope === "project") {
-      console.log("Project scope is not implemented yet.");
-      return;
-    }
-
-    this.rescopeLocalPlugin(toolbox, pluginName);
-  }
-
-  /**
-   * Rescopes a single plugin at local scope: looks it up in global config and
-   * registers it in both global and local settings if needed.
-   */
-  private rescopeLocalPlugin(
-    toolbox: ClaudeCodeToolbox,
-    pluginName: string,
   ): void {
     const bindings = toolbox.getGlobalPluginConfig(pluginName);
 
@@ -116,7 +104,7 @@ export class PluginRescope {
     }
 
     const source = bindings[0];
-    const targetScope = "local";
+    const targetScope = scope;
 
     const alreadyBound = bindings.some(
       (b) => b.scope === targetScope && b.projectPath === this.projectPath,

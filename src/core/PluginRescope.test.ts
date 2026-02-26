@@ -1,7 +1,9 @@
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginRescope } from "#core/PluginRescope.js";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
+import { JsonConfig } from "#util/JsonConfig.js";
 import { getHelpText } from "#util/get-help-text.js";
 
 vi.mock("#core/ClaudeCodeToolbox.js");
@@ -409,17 +411,142 @@ describe("PluginRescope", () => {
   });
 
   describe("rescope with project scope", () => {
-    it("does not modify global or local config when scope is project", () => {
+    it("creates JsonConfig with settings.json when scope is project", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "global",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/other-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "project", "my-plugin@owner"]);
+
+      const jsonConfigCalls = vi.mocked(JsonConfig).mock.calls;
+      const settingsPath = jsonConfigCalls[1]![0];
+      expect(settingsPath).toBe(join(".claude", "settings.json"));
+    });
+
+    it("creates JsonConfig with settings.local.json when scope is local", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "global",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/other-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "local", "my-plugin@owner"]);
+
+      const jsonConfigCalls = vi.mocked(JsonConfig).mock.calls;
+      const settingsPath = jsonConfigCalls[1]![0];
+      expect(settingsPath).toBe(join(".claude", "settings.local.json"));
+    });
+
+    it("registers the plugin with project scope in global binding", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "global",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/other-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["--scope", "project", "my-plugin@owner"]);
 
       const mockToolbox = getToolboxInstance();
-      expect(mockToolbox.getGlobalPluginConfig).not.toHaveBeenCalled();
-      expect(mockToolbox.getEnabledPlugins).not.toHaveBeenCalled();
+      expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
+        "my-plugin@owner",
+        expect.objectContaining({
+          scope: "project",
+          projectPath: "/Users/test/my-project",
+        }),
+      );
+      expect(mockToolbox.addLocalPlugin).toHaveBeenCalledWith(
+        "my-plugin@owner",
+      );
+    });
+
+    it("skips when plugin already has project-scoped binding and is enabled", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "project",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue({
+        "my-plugin@owner": true,
+      });
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "project", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
+      expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
+    });
+
+    it("does not add binding when plugin is absent from global config", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([]);
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "project", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
       expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
       expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
     });
