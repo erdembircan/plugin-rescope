@@ -334,7 +334,7 @@ describe("ClaudeCodeToolbox", () => {
       });
     });
 
-    it("leaves an empty array when all bindings are removed", () => {
+    it("removes the plugin key entirely when all bindings are removed", () => {
       const binding = {
         scope: "local",
         installPath: "/path/to/plugin",
@@ -357,9 +357,7 @@ describe("ClaudeCodeToolbox", () => {
       );
 
       expect(mockGlobalConfig.update).toHaveBeenCalledWith({
-        plugins: {
-          "my-plugin@owner": [],
-        },
+        plugins: {},
       });
     });
 
@@ -402,9 +400,7 @@ describe("ClaudeCodeToolbox", () => {
       );
 
       expect(mockGlobalConfig.update).toHaveBeenCalledWith({
-        plugins: {
-          "my-plugin@owner": [],
-        },
+        plugins: {},
       });
     });
 

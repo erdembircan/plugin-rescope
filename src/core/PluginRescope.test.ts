@@ -682,6 +682,45 @@ describe("PluginRescope", () => {
         "my-plugin@owner",
       );
     });
+
+    it("creates JsonConfig with settings.json when removing with project scope", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "--scope", "project", "my-plugin@owner"]);
+
+      const jsonConfigCalls = vi.mocked(JsonConfig).mock.calls;
+      const settingsPath = jsonConfigCalls[1]![0];
+      expect(settingsPath).toBe(join(".claude", "settings.json"));
+    });
+
+    it("creates JsonConfig with settings.local.json when removing with local scope", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "--scope", "local", "my-plugin@owner"]);
+
+      const jsonConfigCalls = vi.mocked(JsonConfig).mock.calls;
+      const settingsPath = jsonConfigCalls[1]![0];
+      expect(settingsPath).toBe(join(".claude", "settings.local.json"));
+    });
+
+    it("creates JsonConfig with settings.local.json when removing without explicit scope", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const jsonConfigCalls = vi.mocked(JsonConfig).mock.calls;
+      const settingsPath = jsonConfigCalls[1]![0];
+      expect(settingsPath).toBe(join(".claude", "settings.local.json"));
+    });
   });
 
   describe("--help flag", () => {
