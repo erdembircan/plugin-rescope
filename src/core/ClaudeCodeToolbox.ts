@@ -17,8 +17,8 @@ type GlobalPluginConfig = {
   plugins?: Record<string, PluginBinding[]>;
 };
 
-/** Shape of the local project settings file (`.claude/settings.local.json`). */
-type LocalSettings = {
+/** Shape of a project settings file (`.claude/settings.local.json` or `.claude/settings.json`). */
+type ProjectSettings = {
   enabledPlugins?: Record<string, boolean>;
 };
 
@@ -32,11 +32,12 @@ export class ClaudeCodeToolbox {
    * Class constructor.
    *
    * @param globalConfig - Config handle for the global plugin registry file.
-   * @param localConfig - Config handle for the local project settings file.
+   * @param settingsConfig - Config handle for the project settings file
+   *   (either `.claude/settings.local.json` or `.claude/settings.json`).
    */
   constructor(
     private readonly globalConfig: JsonConfig,
-    private readonly localConfig: JsonConfig,
+    private readonly settingsConfig: JsonConfig,
   ) {}
 
   /**
@@ -90,31 +91,30 @@ export class ClaudeCodeToolbox {
   }
 
   /**
-   * Reads the enabled plugins map from the local project settings file
-   * (`.claude/settings.local.json`).
+   * Reads the enabled plugins map from the project settings file.
    *
    * @returns A record mapping plugin names to their enabled state, or an
    *          empty object if the `enabledPlugins` field is missing.
-   * @throws {ConfigNotFoundError} If the local config file does not exist.
+   * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   getEnabledPlugins(): Record<string, boolean> {
-    const config = this.readLocalConfig();
+    const config = this.readSettingsConfig();
     return config.enabledPlugins ?? {};
   }
 
   /**
-   * Adds a plugin to the local project settings by setting its enabled
+   * Adds a plugin to the project settings by setting its enabled
    * state to `true`.
    *
    * @param pluginName - The plugin name to enable.
-   * @throws {ConfigNotFoundError} If the local config file does not exist.
+   * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   addLocalPlugin(pluginName: string): void {
-    const config = this.readLocalConfig();
+    const config = this.readSettingsConfig();
     const enabledPlugins = config.enabledPlugins ?? {};
     enabledPlugins[pluginName] = true;
     config.enabledPlugins = enabledPlugins;
-    this.updateLocalConfig(config);
+    this.updateSettingsConfig(config);
   }
 
   /**
@@ -136,18 +136,18 @@ export class ClaudeCodeToolbox {
   }
 
   /**
-   * Removes a plugin from the local project settings by deleting its key
+   * Removes a plugin from the project settings by deleting its key
    * from the `enabledPlugins` map.
    *
    * @param pluginName - The plugin name to remove.
-   * @throws {ConfigNotFoundError} If the local config file does not exist.
+   * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   removeLocalPlugin(pluginName: string): void {
-    const config = this.readLocalConfig();
+    const config = this.readSettingsConfig();
     const enabledPlugins = config.enabledPlugins ?? {};
     delete enabledPlugins[pluginName];
     config.enabledPlugins = enabledPlugins;
-    this.updateLocalConfig(config);
+    this.updateSettingsConfig(config);
   }
 
   private readGlobalConfig(): GlobalPluginConfig {
@@ -158,11 +158,11 @@ export class ClaudeCodeToolbox {
     this.globalConfig.update(data);
   }
 
-  private readLocalConfig(): LocalSettings {
-    return this.localConfig.read() as LocalSettings;
+  private readSettingsConfig(): ProjectSettings {
+    return this.settingsConfig.read() as ProjectSettings;
   }
 
-  private updateLocalConfig(data: LocalSettings): void {
-    this.localConfig.update(data);
+  private updateSettingsConfig(data: ProjectSettings): void {
+    this.settingsConfig.update(data);
   }
 }
