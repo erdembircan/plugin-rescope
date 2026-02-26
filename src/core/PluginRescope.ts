@@ -83,13 +83,28 @@ export class PluginRescope {
   }
 
   /**
-   * Rescopes a single plugin: looks it up in global config and registers it
-   * in both global and local settings if needed.
+   * Dispatches a single plugin rescope to the appropriate handler based on scope.
    */
   private rescopePlugin(
     toolbox: ClaudeCodeToolbox,
     pluginName: string,
     scope: string,
+  ): void {
+    if (scope === "project") {
+      console.log("Project scope is not implemented yet.");
+      return;
+    }
+
+    this.rescopeLocalPlugin(toolbox, pluginName);
+  }
+
+  /**
+   * Rescopes a single plugin at local scope: looks it up in global config and
+   * registers it in both global and local settings if needed.
+   */
+  private rescopeLocalPlugin(
+    toolbox: ClaudeCodeToolbox,
+    pluginName: string,
   ): void {
     const bindings = toolbox.getGlobalPluginConfig(pluginName);
 
@@ -101,7 +116,7 @@ export class PluginRescope {
     }
 
     const source = bindings[0];
-    const targetScope = scope;
+    const targetScope = "local";
 
     const alreadyBound = bindings.some(
       (b) => b.scope === targetScope && b.projectPath === this.projectPath,
