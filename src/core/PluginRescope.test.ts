@@ -408,6 +408,23 @@ describe("PluginRescope", () => {
     });
   });
 
+  describe("rescope with project scope", () => {
+    it("does not modify global or local config when scope is project", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["--scope", "project", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.getGlobalPluginConfig).not.toHaveBeenCalled();
+      expect(mockToolbox.getEnabledPlugins).not.toHaveBeenCalled();
+      expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
+      expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
+    });
+  });
+
   describe("rescope with remove command", () => {
     it("removes the plugin from global and local config", () => {
       vi.mocked(
