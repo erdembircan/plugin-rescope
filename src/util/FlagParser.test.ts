@@ -299,4 +299,103 @@ describe("FlagParser", () => {
       expect(result.flags["dry"]).toBe(true);
     });
   });
+
+  describe("enum flag definitions", () => {
+    it("accepts an allowed value for an enum flag", () => {
+      const parser = new FlagParser([
+        { name: "scope", allowed: ["local", "project"], default: "local" },
+      ]);
+      const result = parser.parse(["--scope", "project"]);
+
+      expect(result.flags["scope"]).toBe("project");
+    });
+
+    it("returns the configured default when the value is not in the allowed set", () => {
+      const parser = new FlagParser([
+        { name: "scope", allowed: ["local", "project"], default: "local" },
+      ]);
+      const result = parser.parse(["--scope", "global"]);
+
+      expect(result.flags["scope"]).toBe("local");
+    });
+
+    it("returns the configured default when the flag is not supplied", () => {
+      const parser = new FlagParser([
+        { name: "scope", allowed: ["local", "project"], default: "local" },
+      ]);
+      const result = parser.parse(["my-plugin"]);
+
+      expect(result.flags["scope"]).toBe("local");
+    });
+
+    it("returns the configured default when the flag value is empty", () => {
+      const parser = new FlagParser([
+        { name: "scope", allowed: ["local", "project"], default: "local" },
+      ]);
+      const result = parser.parse(["--scope"]);
+
+      expect(result.flags["scope"]).toBe("local");
+    });
+
+    it("mixes enum flags with plain string flags", () => {
+      const parser = new FlagParser([
+        { name: "scope", allowed: ["local", "project"], default: "local" },
+        "output",
+      ]);
+      const result = parser.parse(["--scope", "project", "--output", "dist"]);
+
+      expect(result.flags["scope"]).toBe("project");
+      expect(result.flags["output"]).toBe("dist");
+    });
+
+    it("defaults plain string flags to empty string when mixed with enum flags", () => {
+      const parser = new FlagParser([
+        { name: "scope", allowed: ["local", "project"], default: "local" },
+        "output",
+      ]);
+      const result = parser.parse([]);
+
+      expect(result.flags["scope"]).toBe("local");
+      expect(result.flags["output"]).toBe("");
+    });
+
+    it("works with commands and boolean flags together", () => {
+      const parser = new FlagParser(
+        [{ name: "scope", allowed: ["local", "project"], default: "local" }],
+        { commands: ["add", "remove"], default: "add" },
+        ["help"],
+      );
+      const result = parser.parse([
+        "add",
+        "--scope",
+        "project",
+        "my-plugin",
+      ]);
+
+      expect(result.command).toBe("add");
+      expect(result.flags["scope"]).toBe("project");
+      expect(result.flags["help"]).toBe(false);
+      expect(result.positionals).toEqual(["my-plugin"]);
+    });
+
+    it("normalizes the flag name in a definition object", () => {
+      const parser = new FlagParser<string>([
+        { name: "  --scope  ", allowed: ["local", "project"], default: "local" },
+      ]);
+      const result = parser.parse(["--scope", "project"]);
+
+      expect(result.flags["scope"]).toBe("project");
+    });
+
+    it("validates each enum flag independently", () => {
+      const parser = new FlagParser([
+        { name: "scope", allowed: ["local", "project"], default: "local" },
+        { name: "format", allowed: ["json", "text"], default: "json" },
+      ]);
+      const result = parser.parse(["--scope", "invalid", "--format", "text"]);
+
+      expect(result.flags["scope"]).toBe("local");
+      expect(result.flags["format"]).toBe("text");
+    });
+  });
 });
