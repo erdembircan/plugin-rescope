@@ -37,4 +37,4 @@ jobs:
             }
 
       - uses: ./.github/actions/setup
-      - run: npx esbuild src/index.ts --bundle --platform=node --target=node18 --format=esm --outfile=build/index.js --minify --sourcemap
+      - run: npm run build
