@@ -241,13 +241,13 @@ describe("ClaudeCodeToolbox", () => {
       expect(result).toEqual({});
     });
 
-    it("propagates ConfigNotFoundError when local config file is missing", () => {
-      vi.mocked(mockLocalConfig.read).mockImplementation(() => {
-        throw new ConfigNotFoundError(".claude/settings.local.json");
-      });
+    it("creates the settings file before reading", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({});
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
-      expect(() => toolbox.getEnabledPlugins()).toThrow(ConfigNotFoundError);
+      toolbox.getEnabledPlugins();
+
+      expect(mockLocalConfig.create).toHaveBeenCalled();
     });
   });
 
@@ -283,15 +283,13 @@ describe("ClaudeCodeToolbox", () => {
       });
     });
 
-    it("propagates ConfigNotFoundError when local config file is missing", () => {
-      vi.mocked(mockLocalConfig.read).mockImplementation(() => {
-        throw new ConfigNotFoundError(".claude/settings.local.json");
-      });
+    it("creates the settings file before reading", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({});
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
-      expect(() => toolbox.addLocalPlugin("any-plugin@owner")).toThrow(
-        ConfigNotFoundError,
-      );
+      toolbox.addLocalPlugin("my-plugin@owner");
+
+      expect(mockLocalConfig.create).toHaveBeenCalled();
     });
   });
 
@@ -468,15 +466,13 @@ describe("ClaudeCodeToolbox", () => {
       });
     });
 
-    it("propagates ConfigNotFoundError when local config file is missing", () => {
-      vi.mocked(mockLocalConfig.read).mockImplementation(() => {
-        throw new ConfigNotFoundError(".claude/settings.local.json");
-      });
+    it("creates the settings file before reading", () => {
+      vi.mocked(mockLocalConfig.read).mockReturnValue({});
       const toolbox = new ClaudeCodeToolbox(mockGlobalConfig, mockLocalConfig);
 
-      expect(() => toolbox.removeLocalPlugin("any-plugin@owner")).toThrow(
-        ConfigNotFoundError,
-      );
+      toolbox.removeLocalPlugin("any-plugin@owner");
+
+      expect(mockLocalConfig.create).toHaveBeenCalled();
     });
   });
 });
