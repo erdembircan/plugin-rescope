@@ -2,8 +2,6 @@
 
 **Rescope Claude Code plugins across projects.**
 
-[![npm version](https://img.shields.io/npm/v/plugin-rescope.svg)](https://www.npmjs.com/package/plugin-rescope)
-[![License: AGPL-3.0-or-later](https://img.shields.io/npm/l/plugin-rescope.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 [![Build](https://github.com/erdembircan/plugin-rescope/actions/workflows/build.yml/badge.svg)](https://github.com/erdembircan/plugin-rescope/actions/workflows/build.yml)
 
 Claude Code has a bug where installing a plugin at the local or user scope prevents you from reinstalling it into a different project ([anthropics/claude-code#14202](https://github.com/anthropics/claude-code/issues/14202)). **plugin-rescope** works around this by rescoping plugins across projects.
