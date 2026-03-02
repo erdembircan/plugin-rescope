@@ -1,4 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
 
 /**
@@ -14,6 +15,19 @@ export class JsonConfig {
    */
   constructor(path: string) {
     this.path = path;
+  }
+
+  /**
+   * Creates the config file with an empty JSON object if it does not
+   * already exist. Parent directories are created as needed.
+   */
+  create(): void {
+    if (existsSync(this.path)) {
+      return;
+    }
+
+    mkdirSync(dirname(this.path), { recursive: true });
+    writeFileSync(this.path, "{}\n", "utf-8");
   }
 
   /**
