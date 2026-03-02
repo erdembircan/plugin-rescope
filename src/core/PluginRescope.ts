@@ -2,6 +2,15 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { FlagParser } from "#util/FlagParser.js";
+import {
+  formatAddSuccess,
+  formatAlreadyConfigured,
+  formatError,
+  formatPluginNotFound,
+  formatRemoveSuccess,
+  formatVersionFound,
+  formatVersionNotFound,
+} from "#util/format-output.js";
 import { getHelpText } from "#util/get-help-text.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 
@@ -65,9 +74,11 @@ export class PluginRescope {
     const version = toolbox.validateInstallation();
 
     if (version === false) {
-      console.log("Claude is not installed.");
+      console.log(formatVersionNotFound());
       return;
     }
+
+    console.log(formatVersionFound(version));
 
     const handler =
       command === "add"
@@ -75,12 +86,13 @@ export class PluginRescope {
         : (pluginName: string) => this.unscopePlugin(toolbox, pluginName);
 
     for (const pluginName of pluginNames) {
+      console.log("");
       try {
         handler(pluginName);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : "An unknown error occurred.";
-        console.log(message);
+        console.log(formatError(pluginName, message));
       }
     }
   }
@@ -97,9 +109,7 @@ export class PluginRescope {
     const bindings = toolbox.getGlobalPluginConfig(pluginName);
 
     if (bindings.length === 0) {
-      console.log(
-        `Plugin "${pluginName}" not found in global config. No workaround needed.`,
-      );
+      console.log(formatPluginNotFound(pluginName));
       return;
     }
 
@@ -114,9 +124,7 @@ export class PluginRescope {
     const alreadyEnabled = !!enabledPlugins[pluginName];
 
     if (alreadyBound && alreadyEnabled) {
-      console.log(
-        `Plugin "${pluginName}" is already configured for this project. If it is not working, the issue may be outside the scope of this package.`,
-      );
+      console.log(formatAlreadyConfigured(pluginName));
       return;
     }
 
@@ -138,9 +146,7 @@ export class PluginRescope {
       toolbox.addLocalPlugin(pluginName);
     }
 
-    console.log(
-      `Plugin "${pluginName}" rescoped to project "${this.projectPath}".`,
-    );
+    console.log(formatAddSuccess(pluginName, this.projectPath, scope));
   }
 
   /**
@@ -150,8 +156,6 @@ export class PluginRescope {
   private unscopePlugin(toolbox: ClaudeCodeToolbox, pluginName: string): void {
     toolbox.removeGlobalPluginBinding(pluginName, this.projectPath);
     toolbox.removeLocalPlugin(pluginName);
-    console.log(
-      `Plugin "${pluginName}" removed from project "${this.projectPath}".`,
-    );
+    console.log(formatRemoveSuccess(pluginName, this.projectPath));
   }
 }
