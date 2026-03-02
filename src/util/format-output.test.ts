@@ -79,9 +79,9 @@ describe("format-output", () => {
         "/Users/erdem/my-project",
         "local",
       );
-      const checkmarks = result.match(
-        new RegExp(pc.green("\u2713").replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-      );
+      const raw = pc.green("\u2713");
+      const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const checkmarks = result.match(new RegExp(escaped, "g"));
       expect(checkmarks).toHaveLength(2);
     });
   });
@@ -173,9 +173,8 @@ describe("format-output", () => {
         "my-plugin@marketplace",
         "Config file not found: /path/to/file",
       );
-      expect(result).toContain(
-        pc.dim("Config file not found: /path/to/file"),
-      );
+      const expected = pc.dim("Config file not found: /path/to/file");
+      expect(result).toContain(expected);
     });
   });
 });
