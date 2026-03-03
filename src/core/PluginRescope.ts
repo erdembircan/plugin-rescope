@@ -60,7 +60,7 @@ export class PluginRescope {
 
     const toolbox = new ClaudeCodeToolbox(
       new JsonConfig(globalConfigPath),
-      new JsonConfig(settingsPath),
+      new JsonConfig(settingsPath, true),
     );
 
     const version = toolbox.validateInstallation();
