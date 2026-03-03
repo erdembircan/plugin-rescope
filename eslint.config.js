@@ -7,7 +7,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   eslintPluginPrettier,
   {
-    ignores: ["build/", "node_modules/", "vitest.config.ts", "esbuild.config.js"],
+    ignores: ["build/", "node_modules/", "scripts/", "vitest.config.ts", "esbuild.config.js"],
   },
   {
     rules: {

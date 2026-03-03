@@ -30,6 +30,14 @@ describe("PluginRescope", () => {
     return instances[instances.length - 1]!;
   }
 
+  /**
+   * Helper: collects all console.log output into a single string
+   * for assertion against visible messages.
+   */
+  function allOutput(): string {
+    return consoleSpy.mock.calls.map((call: unknown[]) => call[0]).join("\n");
+  }
+
   describe("rescope", () => {
     it("registers the plugin in global and local config when found", () => {
       vi.mocked(
@@ -263,7 +271,9 @@ describe("PluginRescope", () => {
       const rescope = new PluginRescope("/Users/test/project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
 
-      expect(consoleSpy).toHaveBeenCalledWith(error.message);
+      const output = allOutput();
+      expect(output).toContain("my-plugin@owner");
+      expect(output).toContain(error.message);
     });
 
     it("rescopes multiple plugins in sequence", () => {
@@ -328,9 +338,9 @@ describe("PluginRescope", () => {
       rescope.rescope(["--scope", "local", "missing@owner", "found@owner"]);
 
       const mockToolbox = getToolboxInstance();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Plugin "missing@owner" not found in global config. No workaround needed.',
-      );
+      const output = allOutput();
+      expect(output).toContain("missing@owner");
+      expect(output).toContain("not found");
       expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
         "found@owner",
         expect.objectContaining({ projectPath: "/Users/test/my-project" }),
@@ -365,7 +375,9 @@ describe("PluginRescope", () => {
       rescope.rescope(["--scope", "local", "failing@owner", "working@owner"]);
 
       const mockToolbox = getToolboxInstance();
-      expect(consoleSpy).toHaveBeenCalledWith(error.message);
+      const output = allOutput();
+      expect(output).toContain("failing@owner");
+      expect(output).toContain(error.message);
       expect(mockToolbox.addGlobalPluginBinding).toHaveBeenCalledWith(
         "working@owner",
         expect.objectContaining({ projectPath: "/Users/test/my-project" }),
@@ -655,7 +667,9 @@ describe("PluginRescope", () => {
       rescope.rescope(["remove", "failing@owner", "working@owner"]);
 
       const mockToolbox = getToolboxInstance();
-      expect(consoleSpy).toHaveBeenCalledWith(error.message);
+      const output = allOutput();
+      expect(output).toContain("failing@owner");
+      expect(output).toContain(error.message);
       expect(mockToolbox.removeGlobalPluginBinding).toHaveBeenCalledWith(
         "working@owner",
         "/Users/test/my-project",
@@ -766,7 +780,7 @@ describe("PluginRescope", () => {
       expect(consoleSpy).toHaveBeenCalledWith(getHelpText());
     });
 
-    it("does not include help text when Claude is not installed", () => {
+    it("outputs not-installed message when Claude is not installed", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue(false);
@@ -774,7 +788,8 @@ describe("PluginRescope", () => {
       const rescope = new PluginRescope("/Users/test/project");
       rescope.rescope(["--scope", "local", "my-plugin@owner"]);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Claude is not installed.");
+      const output = allOutput();
+      expect(output).toContain("not found");
     });
   });
 });

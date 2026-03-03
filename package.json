@@ -11,7 +11,8 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "typecheck": "tsc --noEmit -p tsconfig.check.json",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "preview": "node scripts/preview-output.js"
   },
   "author": "Erdem Bircan <erdem.erdembircan@gmail.com>",
   "license": "AGPL-3.0-or-later",
@@ -35,13 +36,16 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.3.0",
+    "esbuild": "^0.25.4",
     "eslint": "^10.0.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "prettier": "^3.8.1",
-    "esbuild": "^0.25.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "picocolors": "^1.1.1"
   }
 }
