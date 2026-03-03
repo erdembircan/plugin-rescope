@@ -153,7 +153,9 @@ export class PluginRescope {
       toolbox.addLocalPlugin(pluginName);
     }
 
-    console.log(FormatOutput.positive(`rescoped to ${this.shortPath} (${scope})`));
+    console.log(
+      FormatOutput.positive(`rescoped to ${this.shortPath} (${scope})`),
+    );
   }
 
   /**

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginRescope } from "#core/PluginRescope.js";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
-import { divider, section } from "#util/format-output.js";
+import { FormatOutput } from "#util/FormatOutput.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 import { getHelpText } from "#util/get-help-text.js";
 
@@ -757,7 +757,7 @@ describe("PluginRescope", () => {
   });
 
   describe("output formatting", () => {
-    it("outputs a section block with the plugin name", () => {
+    it("outputs a header with the plugin name", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
@@ -769,12 +769,10 @@ describe("PluginRescope", () => {
       rescope.rescope(["my-plugin@owner"]);
 
       const output = allOutput();
-      for (const line of section("my-plugin@owner")) {
-        expect(output).toContain(line);
-      }
+      expect(output).toContain(FormatOutput.header("my-plugin@owner"));
     });
 
-    it("outputs a section block for each plugin when processing multiple", () => {
+    it("outputs a header for each plugin when processing multiple", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
@@ -786,15 +784,11 @@ describe("PluginRescope", () => {
       rescope.rescope(["plugin-a@owner", "plugin-b@owner"]);
 
       const output = allOutput();
-      for (const line of section("plugin-a@owner")) {
-        expect(output).toContain(line);
-      }
-      for (const line of section("plugin-b@owner")) {
-        expect(output).toContain(line);
-      }
+      expect(output).toContain(FormatOutput.header("plugin-a@owner"));
+      expect(output).toContain(FormatOutput.header("plugin-b@owner"));
     });
 
-    it("outputs a divider even when processing a single plugin", () => {
+    it("outputs a footer for each plugin block", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
@@ -806,7 +800,7 @@ describe("PluginRescope", () => {
       rescope.rescope(["my-plugin@owner"]);
 
       const output = allOutput();
-      expect(output).toContain(divider());
+      expect(output).toContain(FormatOutput.footer());
     });
 
     it("shows the directory name instead of the full path in rescope output", () => {
