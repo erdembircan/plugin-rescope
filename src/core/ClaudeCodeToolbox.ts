@@ -68,7 +68,7 @@ export class ClaudeCodeToolbox {
    * @throws {ConfigNotFoundError} If the global config file does not exist.
    */
   getGlobalPluginConfig(pluginName: string): PluginBinding[] {
-    const config = this.readGlobalConfig();
+    const config = this.readPluginRegistry();
     return config.plugins?.[pluginName] ?? [];
   }
 
@@ -81,13 +81,13 @@ export class ClaudeCodeToolbox {
    * @throws {ConfigNotFoundError} If the global config file does not exist.
    */
   addGlobalPluginBinding(pluginName: string, binding: PluginBinding): void {
-    const config = this.readGlobalConfig();
+    const config = this.readPluginRegistry();
     const plugins = config.plugins ?? {};
     const existing = plugins[pluginName] ?? [];
     existing.push(binding);
     plugins[pluginName] = existing;
     config.plugins = plugins;
-    this.updateGlobalConfig(config);
+    this.writePluginRegistry(config);
   }
 
   /**
@@ -98,7 +98,7 @@ export class ClaudeCodeToolbox {
    * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   getEnabledPlugins(): Record<string, boolean> {
-    const config = this.readSettingsConfig();
+    const config = this.readProjectSettings();
     return config.enabledPlugins ?? {};
   }
 
@@ -110,11 +110,11 @@ export class ClaudeCodeToolbox {
    * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   addLocalPlugin(pluginName: string): void {
-    const config = this.readSettingsConfig();
+    const config = this.readProjectSettings();
     const enabledPlugins = config.enabledPlugins ?? {};
     enabledPlugins[pluginName] = true;
     config.enabledPlugins = enabledPlugins;
-    this.updateSettingsConfig(config);
+    this.writeProjectSettings(config);
   }
 
   /**
@@ -127,7 +127,7 @@ export class ClaudeCodeToolbox {
    * @throws {ConfigNotFoundError} If the global config file does not exist.
    */
   removeGlobalPluginBinding(pluginName: string, projectPath: string): void {
-    const config = this.readGlobalConfig();
+    const config = this.readPluginRegistry();
     const plugins = config.plugins ?? {};
     const existing = plugins[pluginName] ?? [];
     const remaining = existing.filter((b) => b.projectPath !== projectPath);
@@ -139,7 +139,7 @@ export class ClaudeCodeToolbox {
     }
 
     config.plugins = plugins;
-    this.updateGlobalConfig(config);
+    this.writePluginRegistry(config);
   }
 
   /**
@@ -150,26 +150,48 @@ export class ClaudeCodeToolbox {
    * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   removeLocalPlugin(pluginName: string): void {
-    const config = this.readSettingsConfig();
+    const config = this.readProjectSettings();
     const enabledPlugins = config.enabledPlugins ?? {};
     delete enabledPlugins[pluginName];
     config.enabledPlugins = enabledPlugins;
-    this.updateSettingsConfig(config);
+    this.writeProjectSettings(config);
   }
 
-  private readGlobalConfig(): GlobalPluginConfig {
+  /**
+   * Reads and parses the global plugin registry file.
+   *
+   * @returns The parsed {@link GlobalPluginConfig} object.
+   * @throws {ConfigNotFoundError} If the registry file does not exist.
+   */
+  private readPluginRegistry(): GlobalPluginConfig {
     return this.globalConfig.read() as GlobalPluginConfig;
   }
 
-  private updateGlobalConfig(data: GlobalPluginConfig): void {
+  /**
+   * Writes the given data to the global plugin registry file.
+   *
+   * @param data - The complete {@link GlobalPluginConfig} to persist.
+   */
+  private writePluginRegistry(data: GlobalPluginConfig): void {
     this.globalConfig.update(data);
   }
 
-  private readSettingsConfig(): ProjectSettings {
+  /**
+   * Reads and parses the project settings file.
+   *
+   * @returns The parsed {@link ProjectSettings} object.
+   * @throws {ConfigNotFoundError} If the settings file does not exist.
+   */
+  private readProjectSettings(): ProjectSettings {
     return this.settingsConfig.read() as ProjectSettings;
   }
 
-  private updateSettingsConfig(data: ProjectSettings): void {
+  /**
+   * Writes the given data to the project settings file.
+   *
+   * @param data - The complete {@link ProjectSettings} to persist.
+   */
+  private writeProjectSettings(data: ProjectSettings): void {
     this.settingsConfig.update(data);
   }
 }
