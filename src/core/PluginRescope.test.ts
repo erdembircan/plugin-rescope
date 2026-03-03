@@ -38,6 +38,22 @@ describe("PluginRescope", () => {
     return consoleSpy.mock.calls.map((call: unknown[]) => call[0]).join("\n");
   }
 
+  /** Factory: builds a plugin binding with sensible defaults. */
+  function makeBinding(
+    overrides: Record<string, string> = {},
+  ): Record<string, string> {
+    return {
+      scope: "local",
+      installPath: "/path/to/plugin",
+      version: "1.0.0",
+      installedAt: "2026-02-24T12:00:00.000Z",
+      lastUpdated: "2026-02-24T12:00:00.000Z",
+      gitCommitSha: "abc123",
+      projectPath: "/Users/test/my-project",
+      ...overrides,
+    };
+  }
+
   describe("rescope", () => {
     it("registers the plugin in global and local config when found", () => {
       vi.mocked(
@@ -46,15 +62,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "global",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -86,24 +94,22 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "local",
+        makeBinding({
           installPath: "/specific/install/path",
           version: "3.2.1",
           installedAt: "2026-01-01T00:00:00.000Z",
           lastUpdated: "2026-01-15T00:00:00.000Z",
           gitCommitSha: "sha789",
           projectPath: "/Users/test/original",
-        },
-        {
-          scope: "local",
+        }),
+        makeBinding({
           installPath: "/other/path",
           version: "3.2.1",
           installedAt: "2026-02-01T00:00:00.000Z",
           lastUpdated: "2026-02-15T00:00:00.000Z",
           gitCommitSha: "sha999",
           projectPath: "/Users/test/second",
-        },
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -158,17 +164,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue({
         "my-plugin@owner": true,
       });
@@ -187,17 +183,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
       );
@@ -219,15 +205,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "global",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue({
         "my-plugin@owner": true,
@@ -283,15 +261,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "global",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -320,15 +290,7 @@ describe("PluginRescope", () => {
       vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([
-          {
-            scope: "global",
-            installPath: "/path/to/plugin",
-            version: "1.0.0",
-            installedAt: "2026-02-24T12:00:00.000Z",
-            lastUpdated: "2026-02-24T12:00:00.000Z",
-            gitCommitSha: "abc123",
-            projectPath: "/Users/test/other-project",
-          },
+          makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
         ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -357,15 +319,7 @@ describe("PluginRescope", () => {
           throw error;
         })
         .mockReturnValueOnce([
-          {
-            scope: "global",
-            installPath: "/path/to/plugin",
-            version: "1.0.0",
-            installedAt: "2026-02-24T12:00:00.000Z",
-            lastUpdated: "2026-02-24T12:00:00.000Z",
-            gitCommitSha: "abc123",
-            projectPath: "/Users/test/other-project",
-          },
+          makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
         ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -391,15 +345,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "global",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -430,15 +376,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "global",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -459,15 +397,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "global",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -488,15 +418,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "global",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -524,17 +446,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "project",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding({ scope: "project" })]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue({
         "my-plugin@owner": true,
       });
@@ -571,17 +483,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "my-plugin@owner"]);
@@ -602,17 +504,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "plugin-a@owner", "plugin-b@owner"]);
@@ -640,17 +532,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "my-plugin@owner"]);
@@ -681,15 +563,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/project",
-        },
+        makeBinding({ projectPath: "/Users/test/project" }),
       ]);
       vi.mocked(
         ClaudeCodeToolbox.prototype.removeGlobalPluginBinding,
@@ -710,17 +584,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
       vi.mocked(ClaudeCodeToolbox.prototype.removeGlobalPluginBinding)
         .mockImplementationOnce(() => {
           throw error;
@@ -749,17 +613,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "--scope", "local", "my-plugin@owner"]);
@@ -780,17 +634,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "project",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding({ scope: "project" })]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "--scope", "project", "my-plugin@owner"]);
@@ -806,17 +650,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "--scope", "local", "my-plugin@owner"]);
@@ -832,17 +666,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/my-project",
-        },
-      ]);
+      ).mockReturnValue([makeBinding()]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "my-plugin@owner"]);
@@ -859,15 +683,7 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        {
-          scope: "local",
-          installPath: "/path/to/plugin",
-          version: "1.0.0",
-          installedAt: "2026-02-24T12:00:00.000Z",
-          lastUpdated: "2026-02-24T12:00:00.000Z",
-          gitCommitSha: "abc123",
-          projectPath: "/Users/test/other-project",
-        },
+        makeBinding({ projectPath: "/Users/test/other-project" }),
       ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
