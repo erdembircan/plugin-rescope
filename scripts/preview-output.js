@@ -1,13 +1,17 @@
 /**
  * Renders all CLI output variants with mock data for visual testing.
  * Run with: npm run preview
+ *
+ * Note: This script uses picocolors directly to preview the visual
+ * appearance of the CLI. The actual source code uses the generic
+ * format functions from src/util/format-output.ts.
  */
 
 import pc from "picocolors";
 
-const DIVIDER = pc.dim("─".repeat(40));
+const DIVIDER = pc.dim("\u2500".repeat(40));
 
-function header(label) {
+function section(label) {
   console.log("");
   console.log(DIVIDER);
   console.log(pc.dim(`--- ${label} ---`));
@@ -16,55 +20,49 @@ function header(label) {
 }
 
 // --- Add: success ---
-header("Add: success");
+section("Add: success");
 console.log(`  ${pc.green("\u2713")} Claude Code v1.0.26`);
 console.log("");
-console.log(`  ${pc.green("\u2713")} Found ${pc.bold("my-plugin@marketplace")}`);
-console.log(`  ${pc.green("\u2713")} Rescoped to ${pc.dim("/Users/erdem/my-project")}`);
-console.log(`    ${pc.dim("Scope: local")}`);
+console.log(`  ${pc.green("\u2713")} my-plugin@marketplace rescoped to /Users/erdem/my-project (local)`);
 
 // --- Add: multiple plugins ---
-header("Add: multiple plugins");
+section("Add: multiple plugins");
 console.log(`  ${pc.green("\u2713")} Claude Code v1.0.26`);
 console.log("");
-console.log(`  ${pc.green("\u2713")} Found ${pc.bold("my-plugin@marketplace")}`);
-console.log(`  ${pc.green("\u2713")} Rescoped to ${pc.dim("/Users/erdem/my-project")}`);
-console.log(`    ${pc.dim("Scope: local")}`);
+console.log(`  ${pc.green("\u2713")} my-plugin@marketplace rescoped to /Users/erdem/my-project (local)`);
 console.log("");
-console.log(`  ${pc.green("\u2713")} Found ${pc.bold("other-plugin@marketplace")}`);
-console.log(`  ${pc.green("\u2713")} Rescoped to ${pc.dim("/Users/erdem/my-project")}`);
-console.log(`    ${pc.dim("Scope: project")}`);
+console.log(`  ${pc.green("\u2713")} other-plugin@marketplace rescoped to /Users/erdem/my-project (project)`);
 
 // --- Add: already configured ---
-header("Add: already configured");
+section("Add: already configured");
 console.log(`  ${pc.green("\u2713")} Claude Code v1.0.26`);
 console.log("");
-console.log(`  ${pc.yellow("~")} ${pc.bold("my-plugin@marketplace")} already configured`);
+console.log(`  ${pc.green("\u2713")} my-plugin@marketplace already configured`);
 
 // --- Add: plugin not found ---
-header("Add: plugin not found");
+section("Add: plugin not found");
 console.log(`  ${pc.green("\u2713")} Claude Code v1.0.26`);
 console.log("");
-console.log(`  ${pc.red("\u2717")} ${pc.bold("my-plugin@marketplace")} not found in global`);
-console.log(`    ${pc.dim("config. No workaround needed.")}`);
+console.log(`  ${pc.red("\u2717")} my-plugin@marketplace not found in global config. No workaround needed.`);
 
 // --- Remove: success ---
-header("Remove: success");
+section("Remove: success");
 console.log(`  ${pc.green("\u2713")} Claude Code v1.0.26`);
 console.log("");
-console.log(`  ${pc.green("\u2713")} Removed ${pc.bold("my-plugin@marketplace")}`);
-console.log(`    ${pc.dim("from /Users/erdem/my-project")}`);
+console.log(`  ${pc.green("\u2713")} my-plugin@marketplace removed from /Users/erdem/my-project`);
 
 // --- Claude not installed ---
-header("Claude not installed");
+section("Claude not installed");
 console.log(`  ${pc.red("\u2717")} Claude Code not found`);
-console.log(`    ${pc.dim("Install it from https://claude.ai/download")}`);
 
 // --- Error during operation ---
-header("Error during operation");
+section("Error during operation");
 console.log(`  ${pc.green("\u2713")} Claude Code v1.0.26`);
 console.log("");
-console.log(`  ${pc.red("\u2717")} ${pc.bold("my-plugin@marketplace")}`);
-console.log(`    ${pc.dim("Config file not found: /path/to/file")}`);
+console.log(`  ${pc.red("\u2717")} my-plugin@marketplace: Config file not found: /path/to/file`);
+
+// --- Divider example ---
+section("Divider");
+console.log(DIVIDER);
 
 console.log("");
