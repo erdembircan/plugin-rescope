@@ -95,6 +95,7 @@ export class ClaudeCodeToolbox {
    *
    * @returns A record mapping plugin names to their enabled state, or an
    *          empty object if the `enabledPlugins` field is missing.
+   * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   getEnabledPlugins(): Record<string, boolean> {
     const config = this.readSettingsConfig();
@@ -106,6 +107,7 @@ export class ClaudeCodeToolbox {
    * state to `true`.
    *
    * @param pluginName - The plugin name to enable.
+   * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   addLocalPlugin(pluginName: string): void {
     const config = this.readSettingsConfig();
@@ -145,6 +147,7 @@ export class ClaudeCodeToolbox {
    * from the `enabledPlugins` map.
    *
    * @param pluginName - The plugin name to remove.
+   * @throws {ConfigNotFoundError} If the settings file does not exist.
    */
   removeLocalPlugin(pluginName: string): void {
     const config = this.readSettingsConfig();
