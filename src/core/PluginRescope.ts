@@ -166,7 +166,7 @@ export class PluginRescope {
 
     if (!isBound) {
       console.log(
-        negative(`${pluginName} is not rescoped to ${this.projectPath}`),
+        negative(`${pluginName} is not rescoped to ${this.shortPath}`),
       );
       return;
     }

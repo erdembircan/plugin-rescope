@@ -842,6 +842,9 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([makeBinding()]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "my-plugin@owner"]);
