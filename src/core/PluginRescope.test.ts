@@ -38,10 +38,13 @@ describe("PluginRescope", () => {
     return consoleSpy.mock.calls.map((call: unknown[]) => call[0]).join("\n");
   }
 
+  /** The binding shape returned by {@link ClaudeCodeToolbox.getGlobalPluginConfig}. */
+  type PluginBinding = ReturnType<
+    ClaudeCodeToolbox["getGlobalPluginConfig"]
+  >[number];
+
   /** Factory: builds a plugin binding with sensible defaults. */
-  function makeBinding(
-    overrides: Record<string, string> = {},
-  ): Record<string, string> {
+  function makeBinding(overrides: Partial<PluginBinding> = {}): PluginBinding {
     return {
       scope: "local",
       installPath: "/path/to/plugin",
@@ -62,7 +65,10 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+        makeBinding({
+          scope: "global",
+          projectPath: "/Users/test/other-project",
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -205,7 +211,10 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+        makeBinding({
+          scope: "global",
+          projectPath: "/Users/test/other-project",
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue({
         "my-plugin@owner": true,
@@ -261,7 +270,10 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+        makeBinding({
+          scope: "global",
+          projectPath: "/Users/test/other-project",
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -290,7 +302,10 @@ describe("PluginRescope", () => {
       vi.mocked(ClaudeCodeToolbox.prototype.getGlobalPluginConfig)
         .mockReturnValueOnce([])
         .mockReturnValueOnce([
-          makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+          makeBinding({
+            scope: "global",
+            projectPath: "/Users/test/other-project",
+          }),
         ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -319,7 +334,10 @@ describe("PluginRescope", () => {
           throw error;
         })
         .mockReturnValueOnce([
-          makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+          makeBinding({
+            scope: "global",
+            projectPath: "/Users/test/other-project",
+          }),
         ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -345,7 +363,10 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+        makeBinding({
+          scope: "global",
+          projectPath: "/Users/test/other-project",
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -376,7 +397,10 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+        makeBinding({
+          scope: "global",
+          projectPath: "/Users/test/other-project",
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -397,7 +421,10 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+        makeBinding({
+          scope: "global",
+          projectPath: "/Users/test/other-project",
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -418,7 +445,10 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
       ).mockReturnValue([
-        makeBinding({ scope: "global", projectPath: "/Users/test/other-project" }),
+        makeBinding({
+          scope: "global",
+          projectPath: "/Users/test/other-project",
+        }),
       ]);
       vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
         {},
@@ -562,9 +592,7 @@ describe("PluginRescope", () => {
       ).mockReturnValue("1.0.27");
       vi.mocked(
         ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
-      ).mockReturnValue([
-        makeBinding({ projectPath: "/Users/test/project" }),
-      ]);
+      ).mockReturnValue([makeBinding({ projectPath: "/Users/test/project" })]);
       vi.mocked(
         ClaudeCodeToolbox.prototype.removeGlobalPluginBinding,
       ).mockImplementationOnce(() => {
