@@ -6,9 +6,6 @@ import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
  * Reads and writes a JSON configuration file on disk.
  */
 export class JsonConfig {
-  private readonly path: string;
-  private readonly createIfMissing: boolean;
-
   /**
    * Class constructor.
    *
@@ -17,10 +14,10 @@ export class JsonConfig {
    *   instead of throwing {@link ConfigNotFoundError} when the file does not
    *   exist, and {@link update} creates parent directories before writing.
    */
-  constructor(path: string, createIfMissing: boolean = false) {
-    this.path = path;
-    this.createIfMissing = createIfMissing;
-  }
+  constructor(
+    private readonly path: string,
+    private readonly createIfMissing: boolean = false,
+  ) {}
 
   /**
    * Reads and parses the JSON config file.
@@ -35,7 +32,7 @@ export class JsonConfig {
   read(): object {
     if (!existsSync(this.path)) {
       if (this.createIfMissing) {
-        return JSON.parse("{}") as object;
+        return {};
       }
 
       throw new ConfigNotFoundError(this.path);
