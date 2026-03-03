@@ -2,7 +2,7 @@ import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { FlagParser } from "#util/FlagParser.js";
-import { positive, negative, section } from "#util/format-output.js";
+import { FormatOutput } from "#util/FormatOutput.js";
 import { getHelpText } from "#util/get-help-text.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 
@@ -73,12 +73,15 @@ export class PluginRescope {
 
     const version = toolbox.validateInstallation();
 
+    console.log(FormatOutput.header("version check"));
     if (version === false) {
-      console.log(negative("Claude Code not found"));
+      console.log(FormatOutput.negative("Claude Code not found"));
+      console.log(FormatOutput.footer());
       return;
     }
 
-    console.log(positive(`Claude Code v${version}`));
+    console.log(FormatOutput.positive(`Claude Code v${version}`));
+    console.log(FormatOutput.footer());
 
     const handler =
       command === "add"
@@ -86,17 +89,17 @@ export class PluginRescope {
         : (pluginName: string) => this.unscopePlugin(toolbox, pluginName);
 
     for (const pluginName of pluginNames) {
-      for (const line of section(pluginName)) {
-        console.log(line);
-      }
+      console.log(FormatOutput.header(pluginName));
 
       try {
         handler(pluginName);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : "An unknown error occurred.";
-        console.log(negative(message));
+        console.log(FormatOutput.negative(message));
       }
+
+      console.log(FormatOutput.footer());
     }
   }
 
@@ -113,7 +116,9 @@ export class PluginRescope {
 
     if (bindings.length === 0) {
       console.log(
-        negative("not found in global config. No workaround needed."),
+        FormatOutput.negative(
+          "not found in global config. No workaround needed.",
+        ),
       );
       return;
     }
@@ -129,7 +134,7 @@ export class PluginRescope {
     const alreadyEnabled = !!enabledPlugins[pluginName];
 
     if (alreadyBound && alreadyEnabled) {
-      console.log(positive("already configured"));
+      console.log(FormatOutput.positive("already configured"));
       return;
     }
 
@@ -151,7 +156,9 @@ export class PluginRescope {
       toolbox.addLocalPlugin(pluginName);
     }
 
-    console.log(positive(`rescoped to ${this.shortPath} (${scope})`));
+    console.log(
+      FormatOutput.positive(`rescoped to ${this.shortPath} (${scope})`),
+    );
   }
 
   /**
@@ -166,13 +173,15 @@ export class PluginRescope {
 
     if (!isBound) {
       console.log(
-        negative(`${pluginName} is not rescoped to ${this.shortPath}`),
+        FormatOutput.negative(
+          `${pluginName} is not rescoped to ${this.shortPath}`,
+        ),
       );
       return;
     }
 
     toolbox.removeGlobalPluginBinding(pluginName, this.projectPath);
     toolbox.removeLocalPlugin(pluginName);
-    console.log(positive(`removed from ${this.shortPath}`));
+    console.log(FormatOutput.positive(`removed from ${this.shortPath}`));
   }
 }
