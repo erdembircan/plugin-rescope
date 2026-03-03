@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginRescope } from "#core/PluginRescope.js";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
+import { divider, header } from "#util/format-output.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 import { getHelpText } from "#util/get-help-text.js";
 
@@ -734,6 +735,95 @@ describe("PluginRescope", () => {
       const jsonConfigCalls = vi.mocked(JsonConfig).mock.calls;
       const settingsPath = jsonConfigCalls[1]![0];
       expect(settingsPath).toBe(join(".claude", "settings.local.json"));
+    });
+  });
+
+  describe("output formatting", () => {
+    it("outputs a header with the plugin name", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([]);
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["my-plugin@owner"]);
+
+      const output = allOutput();
+      expect(output).toContain(header("my-plugin@owner"));
+    });
+
+    it("outputs a divider between plugins when processing multiple", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([]);
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["plugin-a@owner", "plugin-b@owner"]);
+
+      const output = allOutput();
+      expect(output).toContain(divider());
+    });
+
+    it("does not output a divider when processing a single plugin", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([]);
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["my-plugin@owner"]);
+
+      const output = allOutput();
+      expect(output).not.toContain(divider());
+    });
+
+    it("shows the directory name instead of the full path in rescope output", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "global",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/other-project",
+        },
+      ]);
+      vi.mocked(ClaudeCodeToolbox.prototype.getEnabledPlugins).mockReturnValue(
+        {},
+      );
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["my-plugin@owner"]);
+
+      const output = allOutput();
+      expect(output).toContain("my-project");
+      expect(output).not.toContain("/Users/test/my-project");
+    });
+
+    it("shows the directory name instead of the full path in remove output", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const output = allOutput();
+      expect(output).toContain("my-project");
+      expect(output).not.toContain("/Users/test/my-project");
     });
   });
 
