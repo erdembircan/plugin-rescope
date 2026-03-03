@@ -155,10 +155,22 @@ export class PluginRescope {
   }
 
   /**
-   * Unscopes a single plugin: removes its project-specific binding from the
-   * global config and removes it from the local project settings.
+   * Unscopes a single plugin: checks whether it has a binding for the current
+   * project and, if so, removes the binding from the global config and
+   * the plugin from the local project settings. Does nothing when no binding
+   * for the current project exists.
    */
   private unscopePlugin(toolbox: ClaudeCodeToolbox, pluginName: string): void {
+    const bindings = toolbox.getGlobalPluginConfig(pluginName);
+    const isBound = bindings.some((b) => b.projectPath === this.projectPath);
+
+    if (!isBound) {
+      console.log(
+        negative(`${pluginName} is not rescoped to ${this.shortPath}`),
+      );
+      return;
+    }
+
     toolbox.removeGlobalPluginBinding(pluginName, this.projectPath);
     toolbox.removeLocalPlugin(pluginName);
     console.log(positive(`removed from ${this.shortPath}`));
