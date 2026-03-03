@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { positive, negative, header, divider } from "#util/format-output.js";
+import { positive, negative, section, divider } from "#util/format-output.js";
 
 describe("format-output", () => {
   describe("positive", () => {
@@ -34,19 +34,21 @@ describe("format-output", () => {
     });
   });
 
-  describe("header", () => {
-    it("returns a string containing the provided message", () => {
-      expect(header("already configured")).toContain("already configured");
+  describe("section", () => {
+    it("returns an array containing the label text", () => {
+      const lines = section("my-plugin@owner");
+      const joined = lines.join("\n");
+      expect(joined).toContain("my-plugin@owner");
     });
 
-    it("returns a non-empty string for any input", () => {
-      expect(header("info").length).toBeGreaterThan(0);
+    it("includes the divider in its output", () => {
+      const lines = section("my-plugin@owner");
+      const joined = lines.join("\n");
+      expect(joined).toContain(divider());
     });
 
-    it("preserves the full message text", () => {
-      const msg = "my-plugin@marketplace already configured";
-      const result = header(msg);
-      expect(result).toContain(msg);
+    it("returns the same structure on repeated calls with the same label", () => {
+      expect(section("label")).toEqual(section("label"));
     });
   });
 
@@ -64,16 +66,6 @@ describe("format-output", () => {
     it("positive and negative return different results for the same message", () => {
       const msg = "same message";
       expect(positive(msg)).not.toBe(negative(msg));
-    });
-
-    it("positive and header return different results for the same message", () => {
-      const msg = "same message";
-      expect(positive(msg)).not.toBe(header(msg));
-    });
-
-    it("negative and header return different results for the same message", () => {
-      const msg = "same message";
-      expect(negative(msg)).not.toBe(header(msg));
     });
   });
 });

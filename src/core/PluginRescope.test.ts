@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginRescope } from "#core/PluginRescope.js";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
-import { divider, header } from "#util/format-output.js";
+import { divider, section } from "#util/format-output.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 import { getHelpText } from "#util/get-help-text.js";
 
@@ -739,7 +739,7 @@ describe("PluginRescope", () => {
   });
 
   describe("output formatting", () => {
-    it("outputs a header with the plugin name", () => {
+    it("outputs a section block with the plugin name", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
@@ -751,10 +751,12 @@ describe("PluginRescope", () => {
       rescope.rescope(["my-plugin@owner"]);
 
       const output = allOutput();
-      expect(output).toContain(header("my-plugin@owner"));
+      for (const line of section("my-plugin@owner")) {
+        expect(output).toContain(line);
+      }
     });
 
-    it("outputs a divider between plugins when processing multiple", () => {
+    it("outputs a section block for each plugin when processing multiple", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
@@ -766,10 +768,15 @@ describe("PluginRescope", () => {
       rescope.rescope(["plugin-a@owner", "plugin-b@owner"]);
 
       const output = allOutput();
-      expect(output).toContain(divider());
+      for (const line of section("plugin-a@owner")) {
+        expect(output).toContain(line);
+      }
+      for (const line of section("plugin-b@owner")) {
+        expect(output).toContain(line);
+      }
     });
 
-    it("does not output a divider when processing a single plugin", () => {
+    it("outputs a divider even when processing a single plugin", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
@@ -781,7 +788,7 @@ describe("PluginRescope", () => {
       rescope.rescope(["my-plugin@owner"]);
 
       const output = allOutput();
-      expect(output).not.toContain(divider());
+      expect(output).toContain(divider());
     });
 
     it("shows the directory name instead of the full path in rescope output", () => {

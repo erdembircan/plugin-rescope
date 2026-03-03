@@ -2,7 +2,7 @@ import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import { ClaudeCodeToolbox } from "#core/ClaudeCodeToolbox.js";
 import { FlagParser } from "#util/FlagParser.js";
-import { positive, negative, header, divider } from "#util/format-output.js";
+import { positive, negative, section } from "#util/format-output.js";
 import { getHelpText } from "#util/get-help-text.js";
 import { JsonConfig } from "#util/JsonConfig.js";
 
@@ -85,14 +85,10 @@ export class PluginRescope {
         ? (pluginName: string) => this.rescopePlugin(toolbox, pluginName, scope)
         : (pluginName: string) => this.unscopePlugin(toolbox, pluginName);
 
-    for (let i = 0; i < pluginNames.length; i++) {
-      const pluginName = pluginNames[i]!;
-
-      if (i > 0) {
-        console.log(divider());
+    for (const pluginName of pluginNames) {
+      for (const line of section(pluginName)) {
+        console.log(line);
       }
-
-      console.log(header(pluginName));
 
       try {
         handler(pluginName);
