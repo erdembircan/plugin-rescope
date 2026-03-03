@@ -569,6 +569,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "my-plugin@owner"]);
@@ -587,6 +600,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "plugin-a@owner", "plugin-b@owner"]);
@@ -612,6 +638,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "my-plugin@owner"]);
@@ -619,7 +658,6 @@ describe("PluginRescope", () => {
       const mockToolbox = getToolboxInstance();
       expect(mockToolbox.addGlobalPluginBinding).not.toHaveBeenCalled();
       expect(mockToolbox.addLocalPlugin).not.toHaveBeenCalled();
-      expect(mockToolbox.getGlobalPluginConfig).not.toHaveBeenCalled();
       expect(mockToolbox.getEnabledPlugins).not.toHaveBeenCalled();
     });
 
@@ -641,6 +679,19 @@ describe("PluginRescope", () => {
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
       vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/project",
+        },
+      ]);
+      vi.mocked(
         ClaudeCodeToolbox.prototype.removeGlobalPluginBinding,
       ).mockImplementationOnce(() => {
         throw new ConfigNotFoundError("/path/to/config.json");
@@ -657,6 +708,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
       vi.mocked(ClaudeCodeToolbox.prototype.removeGlobalPluginBinding)
         .mockImplementationOnce(() => {
           throw error;
@@ -683,6 +747,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "--scope", "local", "my-plugin@owner"]);
@@ -701,6 +778,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "project",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "--scope", "project", "my-plugin@owner"]);
@@ -714,6 +804,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "--scope", "local", "my-plugin@owner"]);
@@ -727,6 +830,19 @@ describe("PluginRescope", () => {
       vi.mocked(
         ClaudeCodeToolbox.prototype.validateInstallation,
       ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/my-project",
+        },
+      ]);
 
       const rescope = new PluginRescope("/Users/test/my-project");
       rescope.rescope(["remove", "my-plugin@owner"]);
@@ -734,6 +850,64 @@ describe("PluginRescope", () => {
       const jsonConfigCalls = vi.mocked(JsonConfig).mock.calls;
       const settingsPath = jsonConfigCalls[1]![0];
       expect(settingsPath).toBe(join(".claude", "settings.local.json"));
+    });
+
+    it("does not remove when plugin has no binding for the current project", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([
+        {
+          scope: "local",
+          installPath: "/path/to/plugin",
+          version: "1.0.0",
+          installedAt: "2026-02-24T12:00:00.000Z",
+          lastUpdated: "2026-02-24T12:00:00.000Z",
+          gitCommitSha: "abc123",
+          projectPath: "/Users/test/other-project",
+        },
+      ]);
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.removeGlobalPluginBinding).not.toHaveBeenCalled();
+      expect(mockToolbox.removeLocalPlugin).not.toHaveBeenCalled();
+    });
+
+    it("does not remove when plugin has no bindings at all", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([]);
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const mockToolbox = getToolboxInstance();
+      expect(mockToolbox.removeGlobalPluginBinding).not.toHaveBeenCalled();
+      expect(mockToolbox.removeLocalPlugin).not.toHaveBeenCalled();
+    });
+
+    it("reports that the plugin is not rescoped when no binding matches", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([]);
+
+      const rescope = new PluginRescope("/Users/test/my-project");
+      rescope.rescope(["remove", "my-plugin@owner"]);
+
+      const output = allOutput();
+      expect(output).toContain("my-plugin@owner");
+      expect(output).toContain("not rescoped");
     });
   });
 
