@@ -73,12 +73,15 @@ export class PluginRescope {
 
     const version = toolbox.validateInstallation();
 
+    console.log(FormatOutput.header("version check"));
     if (version === false) {
       console.log(FormatOutput.negative("Claude Code not found"));
+      console.log(FormatOutput.footer());
       return;
     }
 
     console.log(FormatOutput.positive(`Claude Code v${version}`));
+    console.log(FormatOutput.footer());
 
     const handler =
       command === "add"

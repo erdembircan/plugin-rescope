@@ -903,5 +903,34 @@ describe("PluginRescope", () => {
       const output = allOutput();
       expect(output).toContain("not found");
     });
+
+    it("wraps the version check output in a header/footer block", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue("1.0.27");
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.getGlobalPluginConfig,
+      ).mockReturnValue([]);
+
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["my-plugin@owner"]);
+
+      const output = allOutput();
+      expect(output).toContain(FormatOutput.header("version check"));
+      expect(output).toContain(FormatOutput.footer());
+    });
+
+    it("wraps the not-installed output in a header/footer block", () => {
+      vi.mocked(
+        ClaudeCodeToolbox.prototype.validateInstallation,
+      ).mockReturnValue(false);
+
+      const rescope = new PluginRescope("/Users/test/project");
+      rescope.rescope(["my-plugin@owner"]);
+
+      const output = allOutput();
+      expect(output).toContain(FormatOutput.header("version check"));
+      expect(output).toContain(FormatOutput.footer());
+    });
   });
 });
