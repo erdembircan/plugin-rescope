@@ -1,33 +1,20 @@
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JsonConfig } from "#util/JsonConfig.js";
 import { ConfigNotFoundError } from "#util/ConfigNotFoundError.js";
 
+vi.mock("node:fs");
+
 describe("JsonConfig", () => {
-  let tempDir: string;
-
   beforeEach(() => {
-    tempDir = join(tmpdir(), `jsonconfig-test-${Date.now()}`);
-    mkdirSync(tempDir, { recursive: true });
-  });
-
-  afterEach(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+    vi.clearAllMocks();
   });
 
   describe("read", () => {
     it("returns parsed JSON from the file", () => {
-      const filePath = join(tempDir, "config.json");
-      writeFileSync(filePath, JSON.stringify({ key: "value" }), "utf-8");
-      const config = new JsonConfig(filePath);
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readFileSync).mockReturnValue(JSON.stringify({ key: "value" }));
+      const config = new JsonConfig("/path/to/config.json");
 
       const result = config.read();
 
@@ -35,88 +22,95 @@ describe("JsonConfig", () => {
     });
 
     it("throws ConfigNotFoundError when the file does not exist", () => {
-      const filePath = join(tempDir, "missing.json");
-      const config = new JsonConfig(filePath);
+      vi.mocked(existsSync).mockReturnValue(false);
+      const config = new JsonConfig("/path/to/missing.json");
 
       expect(() => config.read()).toThrow(ConfigNotFoundError);
     });
 
-    it("creates the file with an empty JSON object when createIfMissing is true", () => {
-      const filePath = join(tempDir, "config.json");
-      const config = new JsonConfig(filePath, true);
+    it("returns an empty object when createIfMissing is true and file does not exist", () => {
+      vi.mocked(existsSync).mockReturnValue(false);
+      const config = new JsonConfig("/path/to/config.json", true);
 
       const result = config.read();
 
       expect(result).toEqual({});
-      expect(existsSync(filePath)).toBe(true);
-      expect(JSON.parse(readFileSync(filePath, "utf-8"))).toEqual({});
     });
 
-    it("creates parent directories when createIfMissing is true", () => {
-      const filePath = join(tempDir, "nested", "deep", "config.json");
-      const config = new JsonConfig(filePath, true);
+    it("does not write to disk when createIfMissing is true and file does not exist", () => {
+      vi.mocked(existsSync).mockReturnValue(false);
+      const config = new JsonConfig("/path/to/config.json", true);
 
-      const result = config.read();
+      config.read();
 
-      expect(result).toEqual({});
-      expect(existsSync(filePath)).toBe(true);
+      expect(writeFileSync).not.toHaveBeenCalled();
+      expect(mkdirSync).not.toHaveBeenCalled();
     });
 
     it("returns existing file contents when createIfMissing is true and file exists", () => {
-      const filePath = join(tempDir, "config.json");
-      const data = { existing: "data" };
-      writeFileSync(filePath, JSON.stringify(data), "utf-8");
-      const config = new JsonConfig(filePath, true);
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readFileSync).mockReturnValue(
+        JSON.stringify({ existing: "data" }),
+      );
+      const config = new JsonConfig("/path/to/config.json", true);
 
       const result = config.read();
 
-      expect(result).toEqual(data);
+      expect(result).toEqual({ existing: "data" });
     });
   });
 
   describe("update", () => {
     it("writes data as pretty-printed JSON", () => {
-      const filePath = join(tempDir, "config.json");
-      writeFileSync(filePath, "{}", "utf-8");
-      const config = new JsonConfig(filePath);
+      vi.mocked(existsSync).mockReturnValue(true);
+      const config = new JsonConfig("/path/to/config.json");
 
       config.update({ key: "value" });
 
-      const content = readFileSync(filePath, "utf-8");
-      expect(content).toBe(JSON.stringify({ key: "value" }, null, 2) + "\n");
+      expect(writeFileSync).toHaveBeenCalledWith(
+        "/path/to/config.json",
+        JSON.stringify({ key: "value" }, null, 2) + "\n",
+        "utf-8",
+      );
     });
 
     it("throws ConfigNotFoundError when the file does not exist", () => {
-      const filePath = join(tempDir, "missing.json");
-      const config = new JsonConfig(filePath);
+      vi.mocked(existsSync).mockReturnValue(false);
+      const config = new JsonConfig("/path/to/missing.json");
 
       expect(() => config.update({ key: "value" })).toThrow(
         ConfigNotFoundError,
       );
     });
 
-    it("creates the file when createIfMissing is true and file does not exist", () => {
-      const filePath = join(tempDir, "config.json");
-      const config = new JsonConfig(filePath, true);
+    it("creates parent directories when createIfMissing is true and file does not exist", () => {
+      vi.mocked(existsSync).mockReturnValue(false);
+      const config = new JsonConfig("/path/to/nested/config.json", true);
 
       config.update({ key: "value" });
 
-      expect(existsSync(filePath)).toBe(true);
-      expect(JSON.parse(readFileSync(filePath, "utf-8"))).toEqual({
-        key: "value",
+      expect(mkdirSync).toHaveBeenCalledWith("/path/to/nested", {
+        recursive: true,
       });
+      expect(writeFileSync).toHaveBeenCalledWith(
+        "/path/to/nested/config.json",
+        JSON.stringify({ key: "value" }, null, 2) + "\n",
+        "utf-8",
+      );
     });
 
-    it("creates parent directories when createIfMissing is true", () => {
-      const filePath = join(tempDir, "nested", "deep", "config.json");
-      const config = new JsonConfig(filePath, true);
+    it("writes data without creating directories when file already exists", () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      const config = new JsonConfig("/path/to/config.json", true);
 
       config.update({ key: "value" });
 
-      expect(existsSync(filePath)).toBe(true);
-      expect(JSON.parse(readFileSync(filePath, "utf-8"))).toEqual({
-        key: "value",
-      });
+      expect(mkdirSync).not.toHaveBeenCalled();
+      expect(writeFileSync).toHaveBeenCalledWith(
+        "/path/to/config.json",
+        JSON.stringify({ key: "value" }, null, 2) + "\n",
+        "utf-8",
+      );
     });
   });
 });

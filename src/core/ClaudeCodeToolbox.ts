@@ -34,8 +34,8 @@ export class ClaudeCodeToolbox {
    * @param globalConfig - Config handle for the global plugin registry file.
    * @param settingsConfig - Config handle for the project settings file
    *   (either `.claude/settings.local.json` or `.claude/settings.json`).
-   *   Should be constructed with `createIfMissing: true` so that missing
-   *   settings files are created automatically.
+   *   Should be constructed with `createIfMissing: true` so that a missing
+   *   settings file returns an empty config on read and is created on write.
    */
   constructor(
     private readonly globalConfig: JsonConfig,
@@ -94,8 +94,8 @@ export class ClaudeCodeToolbox {
 
   /**
    * Reads the enabled plugins map from the project settings file.
-   * If the settings file does not exist, it is created automatically
-   * and an empty map is returned.
+   * If the settings file does not exist and `createIfMissing` is enabled,
+   * an empty map is returned.
    *
    * @returns A record mapping plugin names to their enabled state, or an
    *          empty object if the `enabledPlugins` field is missing.
@@ -107,8 +107,8 @@ export class ClaudeCodeToolbox {
 
   /**
    * Adds a plugin to the project settings by setting its enabled
-   * state to `true`. If the settings file does not exist, it is
-   * created automatically.
+   * state to `true`. If the settings file does not exist and
+   * `createIfMissing` is enabled, it is created on write.
    *
    * @param pluginName - The plugin name to enable.
    */
@@ -147,8 +147,8 @@ export class ClaudeCodeToolbox {
 
   /**
    * Removes a plugin from the project settings by deleting its key
-   * from the `enabledPlugins` map. If the settings file does not exist,
-   * it is created automatically.
+   * from the `enabledPlugins` map. If the settings file does not exist
+   * and `createIfMissing` is enabled, it is created on write.
    *
    * @param pluginName - The plugin name to remove.
    */

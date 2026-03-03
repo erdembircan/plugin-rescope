@@ -13,9 +13,9 @@ export class JsonConfig {
    * Class constructor.
    *
    * @param path - Absolute path to the JSON config file.
-   * @param createIfMissing - When `true`, {@link read} and {@link update}
-   *   create the file (and parent directories) with an empty JSON object
-   *   instead of throwing {@link ConfigNotFoundError}.
+   * @param createIfMissing - When `true`, {@link read} returns an empty object
+   *   instead of throwing {@link ConfigNotFoundError} when the file does not
+   *   exist, and {@link update} creates parent directories before writing.
    */
   constructor(path: string, createIfMissing: boolean = false) {
     this.path = path;
@@ -26,8 +26,7 @@ export class JsonConfig {
    * Reads and parses the JSON config file.
    *
    * When `createIfMissing` is enabled and the file does not exist, an empty
-   * JSON object is written to disk (creating parent directories as needed)
-   * and `{}` is returned.
+   * object is returned without creating the file on disk.
    *
    * @returns The parsed contents of the file.
    * @throws {ConfigNotFoundError} If the file does not exist and
@@ -36,8 +35,7 @@ export class JsonConfig {
   read(): object {
     if (!existsSync(this.path)) {
       if (this.createIfMissing) {
-        this.writeEmpty();
-        return {};
+        return JSON.parse("{}") as object;
       }
 
       throw new ConfigNotFoundError(this.path);
@@ -67,14 +65,5 @@ export class JsonConfig {
     }
 
     writeFileSync(this.path, JSON.stringify(data, null, 2) + "\n", "utf-8");
-  }
-
-  /**
-   * Creates the config file with an empty JSON object, including any
-   * missing parent directories.
-   */
-  private writeEmpty(): void {
-    mkdirSync(dirname(this.path), { recursive: true });
-    writeFileSync(this.path, "{}\n", "utf-8");
   }
 }
