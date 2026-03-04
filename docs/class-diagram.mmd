@@ -1,0 +1,44 @@
+classDiagram
+    class PluginRescope {
+        +rescope()
+    }
+
+    class ClaudeCodeToolbox {
+        +validateInstallation()
+        +getGlobalPluginConfig()
+        +addGlobalPluginBinding()
+        +removeGlobalPluginBinding()
+        +getEnabledPlugins()
+        +addLocalPlugin()
+        +removeLocalPlugin()
+    }
+
+    class ShellCommand {
+        +execute()$
+    }
+
+    class ShellCommandError {
+    }
+
+    class ConfigNotFoundError {
+    }
+
+    Error <|-- ShellCommandError
+    Error <|-- ConfigNotFoundError
+
+    class JsonConfig {
+        +read()
+        +update()
+    }
+
+    class FlagParser {
+        +parse()
+    }
+
+    PluginRescope ..> FlagParser : uses
+    PluginRescope ..> ClaudeCodeToolbox : uses
+    PluginRescope ..> JsonConfig : creates
+    ClaudeCodeToolbox ..> ShellCommand : uses
+    ClaudeCodeToolbox ..> JsonConfig : uses
+    ShellCommand ..> ShellCommandError : throws
+    JsonConfig ..> ConfigNotFoundError : throws

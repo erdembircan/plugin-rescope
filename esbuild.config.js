@@ -8,5 +8,4 @@ await build({
   format: "esm",
   outfile: "build/index.js",
   minify: true,
-  sourcemap: true,
 });

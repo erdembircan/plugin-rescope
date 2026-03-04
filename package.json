@@ -1,6 +1,6 @@
 {
   "name": "plugin-rescope",
-  "version": "1.0.0-dev",
+  "version": "1.0.0",
   "description": "Workarounds to rescope Claude Code plugins across projects",
   "type": "module",
   "bin": {
@@ -43,6 +43,9 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "minimatch": "^10.2.4"
   },
   "dependencies": {
     "picocolors": "^1.1.1"
