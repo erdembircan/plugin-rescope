@@ -4,6 +4,5 @@ CLAUDE.md
 .claude/
 .vscode/
 build/
-docs/
 node_modules/
 worktrees/
