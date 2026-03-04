@@ -1,0 +1,34 @@
+flowchart TD
+    A["plugin-rescope"] --> args
+
+    subgraph args["Arguments"]
+        CMD["command (add|remove)"] --> B["--scope (local|project)"] --> C["--help"] --> D["plugin_name [plugin_name ...]"]
+    end
+
+    args --> PARSE["Parse arguments"]
+    PARSE --> HELP{"--help or no plugins?"}
+    HELP -->|Yes| SHOW_HELP["Show help text"]
+    HELP -->|No| SCOPE{"Determine scope"}
+
+    SCOPE --> SETTINGS{"scope?"}
+    SETTINGS -->|local| LOCAL_FILE[".claude/settings.local.json"]
+    SETTINGS -->|project| PROJECT_FILE[".claude/settings.json"]
+
+    LOCAL_FILE --> I
+    PROJECT_FILE --> I
+
+    I{"Is Claude installed?"}
+    I -->|No| J["Show message: Claude is not installed"]
+    I -->|Yes| K{"command?"}
+
+    K -->|add| LOOP_ADD["For each plugin"]
+    LOOP_ADD --> E{"Is plugin found in global config?"}
+    E -->|Yes| ALREADY{"Already configured for this project?"}
+    ALREADY -->|Yes| SKIP["Show message: already configured"]
+    ALREADY -->|No| F["Add project binding to global config"]
+    F --> H["Enable plugin in project settings"]
+    E -->|No| G["Show message: not found, no workaround needed"]
+
+    K -->|remove| LOOP_REMOVE["For each plugin"]
+    LOOP_REMOVE --> L["Remove project binding from global config"]
+    L --> M["Remove plugin from project settings"]
