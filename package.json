@@ -4,7 +4,7 @@
   "description": "Workarounds to rescope Claude Code plugins across projects",
   "type": "module",
   "bin": {
-    "plugin-rescope": "./bin/plugin-rescope.js"
+    "plugin-rescope": "bin/plugin-rescope.js"
   },
   "scripts": {
     "build": "node esbuild.config.js",
