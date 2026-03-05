@@ -14,7 +14,7 @@
     "test": "vitest run"
   },
   "author": "Erdem Bircan <erdem.erdembircan@gmail.com>",
-  "license": "AGPL-3.0-or-later",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=18.0.0"
   },
