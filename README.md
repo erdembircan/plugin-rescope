@@ -97,4 +97,4 @@ plugin-rescope remove my-plugin@marketplace
 
 ## License
 
-[AGPL-3.0-or-later](https://www.gnu.org/licenses/agpl-3.0.html) -- see [LICENSE](./LICENSE) for details.
+[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) -- see [LICENSE](./LICENSE) for details.
