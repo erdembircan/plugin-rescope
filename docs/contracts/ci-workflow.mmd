@@ -24,9 +24,6 @@ sequenceDiagram
     rect rgb(224, 255, 230)
         Note over M,NPM: Push → master (post-merge)
         activate M
-        M->>M: lint
-        M->>M: test
-        M->>M: typecheck
         M->>M: build
         M->>M: commit build/<br/>[BUILD]: update build output
         deactivate M

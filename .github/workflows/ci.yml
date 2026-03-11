@@ -2,17 +2,29 @@ name: CI
 
 on:
   pull_request:
-    branches: [development]
+    branches: [master]
 
 jobs:
   lint:
-    uses: ./.github/workflows/lint.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: npm run lint
 
   test:
-    uses: ./.github/workflows/test.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: npm test
 
   typecheck:
-    uses: ./.github/workflows/typecheck.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: npm run typecheck
 
   build:
     needs: [lint, test, typecheck]
