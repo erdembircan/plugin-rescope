@@ -35,6 +35,13 @@ classDiagram
         +parse()
     }
 
+    class FormatOutput {
+        +header()$
+        +footer()$
+        +positive()$
+        +negative()$
+    }
+
     PluginRescope ..> FlagParser : uses
     PluginRescope ..> ClaudeCodeToolbox : uses
     PluginRescope ..> JsonConfig : creates
@@ -42,3 +49,4 @@ classDiagram
     ClaudeCodeToolbox ..> JsonConfig : uses
     ShellCommand ..> ShellCommandError : throws
     JsonConfig ..> ConfigNotFoundError : throws
+    PluginRescope ..> FormatOutput : uses
