@@ -23,12 +23,22 @@ flowchart TD
 
     K -->|add| LOOP_ADD["For each plugin"]
     LOOP_ADD --> E{"Is plugin found in global config?"}
-    E -->|Yes| ALREADY{"Already configured for this project?"}
-    ALREADY -->|Yes| SKIP["Show message: already configured"]
-    ALREADY -->|No| F["Add project binding to global config"]
-    F --> H["Enable plugin in project settings"]
+    E -->|Yes| BOTH{"Bound to project AND enabled?"}
+    BOTH -->|Yes| SKIP["Show message: already configured"]
+    BOTH -->|No| BOUND{"Already bound to project?"}
+    BOUND -->|No| ADD_BINDING["Add project binding to global config"]
+    BOUND -->|Yes| ENABLED_CHECK
+    ADD_BINDING --> ENABLED_CHECK{"Already enabled in settings?"}
+    ENABLED_CHECK -->|No| ENABLE["Enable plugin in project settings"]
+    ENABLED_CHECK -->|Yes| RESCOPED["Show message: rescoped to project"]
+    ENABLE --> RESCOPED
     E -->|No| G["Show message: not found, no workaround needed"]
 
     K -->|remove| LOOP_REMOVE["For each plugin"]
-    LOOP_REMOVE --> L["Remove project binding from global config"]
+    LOOP_REMOVE --> IS_BOUND{"Is plugin bound to this project?"}
+    IS_BOUND -->|No| NOT_RESCOPED["Show message: not rescoped to project"]
+    IS_BOUND -->|Yes| L["Remove project binding from global config"]
     L --> M["Remove plugin from project settings"]
+
+    LOOP_ADD -.->|error| ERR["Show error message, continue to next plugin"]
+    LOOP_REMOVE -.->|error| ERR
