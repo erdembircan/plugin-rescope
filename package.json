@@ -27,6 +27,14 @@
     "#core/*": "./src/core/*",
     "#util/*": "./src/util/*"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erdembircan/plugin-rescope.git"
+  },
+  "bugs": {
+    "url": "https://github.com/erdembircan/plugin-rescope/issues"
+  },
+  "homepage": "https://github.com/erdembircan/plugin-rescope#readme",
   "keywords": [
     "claude",
     "plugin",
