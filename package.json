@@ -1,6 +1,6 @@
 {
   "name": "plugin-rescope",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Workarounds to rescope Claude Code plugins across projects",
   "type": "module",
   "bin": {
